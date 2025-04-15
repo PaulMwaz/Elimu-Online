@@ -8,7 +8,7 @@ import { Dashboard } from "./pages/Dashboard.js";
 import { AdminPanel } from "./pages/AdminPanel.js";
 import { ResourcePage } from "./pages/ResourcePage.js";
 
-// ✅ Fix: Wait until DOM is loaded
+// ✅ Wait for DOM content to load
 window.addEventListener("DOMContentLoaded", () => {
   console.log("✅ DOM loaded. Initializing app...");
 
@@ -28,14 +28,14 @@ window.addEventListener("DOMContentLoaded", () => {
   );
   app.classList.add("flex-grow");
 
-  // Insert Navbar
+  // Insert Navbar only once
   const navbar = Navbar();
   document.body.insertBefore(navbar, app);
 
-  // Routing logic
+  // 🔁 SPA Routing Function
   function handleRouting() {
     const path = window.location.pathname;
-    app.innerHTML = "";
+    app.innerHTML = ""; // Clear existing content
 
     switch (path) {
       case "/":
@@ -64,17 +64,24 @@ window.addEventListener("DOMContentLoaded", () => {
         app.innerHTML = `<div class="text-center py-20 text-red-600 text-xl">404 - Page Not Found</div>`;
     }
 
-    // Inject Footer
+    // ❌ Remove any existing footer before adding a new one
+    const oldFooter = document.querySelector("footer");
+    if (oldFooter) oldFooter.remove();
+
+    // ✅ Inject fresh Footer
     const footer = Footer();
     document.body.appendChild(footer);
 
+    // Enable Dark Mode toggle and Footer Animation
     setupDarkModeToggle();
     animateFooterOnScroll();
   }
 
+  // 🌙 Dark Mode Toggle Handler
   function setupDarkModeToggle() {
     const toggle = document.getElementById("darkToggle");
     const root = document.documentElement;
+
     if (toggle) {
       toggle.addEventListener("change", () => {
         root.classList.toggle("dark", toggle.checked);
@@ -82,6 +89,7 @@ window.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // ✨ Footer Reveal on Scroll
   function animateFooterOnScroll() {
     const footer = document.getElementById("main-footer");
     if (!footer) return;
@@ -101,7 +109,7 @@ window.addEventListener("DOMContentLoaded", () => {
     observer.observe(footer);
   }
 
-  // Run router
+  // 🚀 Run router on first load & on browser navigation
   handleRouting();
   window.addEventListener("popstate", handleRouting);
 });
