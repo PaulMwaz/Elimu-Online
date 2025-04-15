@@ -1,0 +1,128 @@
+/* Tailwind Directives */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 🌐 General Layout */
+body {
+  @apply font-sans bg-light text-textMain;
+}
+
+.dark body {
+  @apply bg-gray-900 text-white;
+}
+
+.dark nav {
+  @apply bg-gray-800 text-white;
+}
+
+.dark footer {
+  @apply bg-gray-800 text-white;
+}
+
+/* 📱 Responsive Utilities */
+.container {
+  @apply max-w-7xl mx-auto px-4;
+}
+
+.section {
+  @apply py-12;
+}
+
+/* 🔘 Dark Mode Toggle Switch */
+input[type="checkbox"] + div > .toggle-dot {
+  @apply transform translate-x-0;
+}
+
+input[type="checkbox"]:checked + div > .toggle-dot {
+  @apply transform translate-x-5 bg-blue-500;
+}
+
+/* 🖼️ HeroSlider Fix: No gray flash */
+.slider {
+  @apply relative w-full h-full;
+  position: relative;
+  overflow: hidden;
+  background-image: url("/images/slide1.jpg"); /* ✅ fallback image */
+  background-size: cover;
+  background-position: center;
+}
+
+.slider img {
+  @apply absolute top-0 left-0 w-full h-full;
+  object-fit: cover; /* ✅ Fill full container */
+  object-position: center center; /* Adjust focus here if needed */
+  transition: opacity 1s ease-in-out;
+  animation: fadeSlide 12s infinite;
+  opacity: 0;
+  z-index: 0;
+}
+
+.slider img:nth-child(1) {
+  animation-delay: 0s;
+}
+.slider img:nth-child(2) {
+  animation-delay: 4s;
+}
+.slider img:nth-child(3) {
+  animation-delay: 8s;
+}
+
+@keyframes fadeSlide {
+  0%,
+  5% {
+    opacity: 0;
+    z-index: 0;
+  }
+  10%,
+  30% {
+    opacity: 1;
+    z-index: 1;
+  }
+  35%,
+  100% {
+    opacity: 0;
+    z-index: 0;
+  }
+}
+
+/* 🎤 Hero Text Overlay */
+.hero-text {
+  @apply absolute inset-0 flex items-center justify-center text-center px-4;
+}
+
+.hero-text h1 {
+  @apply text-white text-2xl md:text-4xl lg:text-5xl font-bold;
+}
+
+/* 💬 Testimonials Carousel */
+.testimonials_scroll {
+  @apply flex overflow-x-auto gap-4 snap-x snap-mandatory px-4;
+}
+
+.testimonials_card {
+  @apply flex-none w-80 bg-white dark:bg-gray-700 p-6 rounded-lg shadow snap-center transition duration-300;
+}
+
+/* 👩‍💻 Team Section */
+.team_card {
+  @apply bg-gray-100 dark:bg-gray-800 p-6 rounded-lg shadow text-center transition duration-300;
+}
+
+/* 🎯 Buttons */
+.btn {
+  @apply px-4 py-2 rounded bg-secondary text-white hover:bg-blue-700 transition duration-300;
+}
+
+.btn-outline {
+  @apply px-4 py-2 border border-secondary text-secondary hover:bg-secondary hover:text-white rounded transition;
+}
+
+/* ⬇️ Scroll Reveal Animation for Footer */
+#main-footer {
+  @apply opacity-0 translate-y-10 transition-all duration-700;
+}
+
+#main-footer.visible {
+  @apply opacity-100 translate-y-0;
+}
