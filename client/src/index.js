@@ -8,7 +8,6 @@ import { Dashboard } from "./pages/Dashboard.js";
 import { AdminPanel } from "./pages/AdminPanel.js";
 import { ResourcePage } from "./pages/ResourcePage.js";
 
-// ✅ Wait for DOM content to load
 window.addEventListener("DOMContentLoaded", () => {
   console.log("✅ DOM loaded. Initializing app...");
 
@@ -28,15 +27,22 @@ window.addEventListener("DOMContentLoaded", () => {
   );
   app.classList.add("flex-grow");
 
-  // Insert Navbar only once
-  const navbar = Navbar();
-  document.body.insertBefore(navbar, app);
-
   // 🔁 SPA Routing Function
   function handleRouting() {
     const path = window.location.pathname;
-    app.innerHTML = ""; // Clear existing content
+    app.innerHTML = ""; // Clear main content
 
+    // ❌ Remove existing Navbar & Footer
+    const oldNav = document.querySelector("nav");
+    const oldFooter = document.querySelector("footer");
+    if (oldNav) oldNav.remove();
+    if (oldFooter) oldFooter.remove();
+
+    // ✅ Re-insert fresh Navbar
+    const newNavbar = Navbar();
+    document.body.insertBefore(newNavbar, app);
+
+    // ✅ Page routing
     switch (path) {
       case "/":
       case "/home":
@@ -64,15 +70,10 @@ window.addEventListener("DOMContentLoaded", () => {
         app.innerHTML = `<div class="text-center py-20 text-red-600 text-xl">404 - Page Not Found</div>`;
     }
 
-    // ❌ Remove any existing footer before adding a new one
-    const oldFooter = document.querySelector("footer");
-    if (oldFooter) oldFooter.remove();
-
-    // ✅ Inject fresh Footer
+    // ✅ Add new footer
     const footer = Footer();
     document.body.appendChild(footer);
 
-    // Enable Dark Mode toggle and Footer Animation
     setupDarkModeToggle();
     animateFooterOnScroll();
   }
@@ -109,7 +110,7 @@ window.addEventListener("DOMContentLoaded", () => {
     observer.observe(footer);
   }
 
-  // 🚀 Run router on first load & on browser navigation
+  // 🚀 Load on first run & on browser history pop
   handleRouting();
   window.addEventListener("popstate", handleRouting);
 });

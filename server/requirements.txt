@@ -1,1 +1,6 @@
-# requirements.txt placeholder
+Flask
+Flask-SQLAlchemy
+Flask-Cors
+python-dotenv
+google-cloud-storage
+Werkzeug
