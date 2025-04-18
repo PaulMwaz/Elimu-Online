@@ -126,3 +126,28 @@ input[type="checkbox"]:checked + div > .toggle-dot {
 #main-footer.visible {
   @apply opacity-100 translate-y-0;
 }
+
+/* 📄 WhatsApp-Style File Cards */
+.file-card {
+  @apply bg-white dark:bg-gray-800 p-4 rounded shadow flex flex-col justify-between transition duration-200;
+}
+
+.file-card:hover {
+  @apply border border-blue-500 scale-105;
+}
+
+.file-name {
+  @apply text-sm font-medium text-gray-800 dark:text-white truncate;
+}
+
+.file-meta {
+  @apply flex items-center gap-3 mt-2;
+}
+
+.file-icon {
+  @apply h-8 w-8;
+}
+
+.download-link {
+  @apply text-blue-600 underline hover:text-blue-800 text-sm;
+}
