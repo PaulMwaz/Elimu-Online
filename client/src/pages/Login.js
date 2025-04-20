@@ -1,6 +1,6 @@
 export function Login() {
   const section = document.createElement("section");
-  section.className = "container py-12 text-center";
+  section.className = "container py-16 mt-24 text-center px-4";
 
   const user = JSON.parse(localStorage.getItem("user"));
   const isLoggedIn = user && user.full_name;
@@ -19,12 +19,12 @@ export function Login() {
       ${
         !isLoggedIn
           ? `
-        <input id="loginEmail" type="email" placeholder="Email" class="w-full mb-4 p-2 border rounded" />
-        <input id="loginPassword" type="password" placeholder="Password" class="w-full mb-4 p-2 border rounded" />
-        <button id="loginBtn" class="btn w-full">Login</button>
+        <input id="loginEmail" type="email" placeholder="Email" class="w-full mb-4 p-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-400" />
+        <input id="loginPassword" type="password" placeholder="Password" class="w-full mb-4 p-2 border border-gray-300 rounded focus:outline-none focus:ring focus:border-blue-400" />
+        <button id="loginBtn" class="w-full py-2 bg-blue-600 text-white font-semibold rounded hover:bg-blue-700 transition">Login</button>
       `
           : `
-        <button id="logoutBtn" class="btn w-full bg-red-600 hover:bg-red-700">Logout</button>
+        <button id="logoutBtn" class="w-full py-2 bg-red-600 text-white font-semibold rounded hover:bg-red-700 transition">Logout</button>
       `
       }
       <div id="loginMessage" class="mt-4 text-sm"></div>
