@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: elimu-online-backend
+    env: python
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn run:app"
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: GOOGLE_APPLICATION_CREDENTIALS
+        value: gcs_key.json
+      - key: SECRET_KEY
+        value: your_secret_key_here
+      - key: DATABASE_URL
+        value: your_database_url_here
+      - key: GCS_BUCKET_NAME
+        value: your_bucket_name_here
+    autoDeploy: true
