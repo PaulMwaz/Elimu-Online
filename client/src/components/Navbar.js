@@ -8,19 +8,13 @@ export function Navbar() {
     <div class="flex items-center justify-between">
       <span class="text-xl font-bold whitespace-nowrap">Elimu-Online</span>
 
-      <!-- Right side -->
       <div class="flex items-center gap-4">
         ${
           isLoggedIn()
-            ? `
-              <button id="sidebarToggle" class="text-white text-2xl md:hidden focus:outline-none">☰</button>
-            `
-            : `
-              <button id="mobileMenuToggle" class="text-white text-2xl md:hidden focus:outline-none">☰</button>
-            `
+            ? `<button id="sidebarToggle" class="text-white text-2xl md:hidden focus:outline-none">☰</button>`
+            : `<button id="mobileMenuToggle" class="text-white text-2xl md:hidden focus:outline-none">☰</button>`
         }
 
-        <!-- Desktop Links or Welcome/Logout -->
         <div id="navLinks" class="hidden md:flex gap-4 items-center text-sm font-medium">
           ${
             isLoggedIn()
@@ -35,16 +29,13 @@ export function Navbar() {
                 <a href="/about" data-link class="hover:text-blue-200 transition">About</a>
                 <a href="/resources" data-link class="hover:text-blue-200 transition">Resources</a>
                 <a href="/login" data-link class="hover:text-blue-200 transition">Login</a>
-                <a href="/register" data-link class="bg-white text-blue-700 font-semibold px-4 py-1.5 rounded hover:bg-blue-200 transition">
-                  Register
-                </a>
+                <a href="/register" data-link class="bg-white text-blue-700 font-semibold px-4 py-1.5 rounded hover:bg-blue-200 transition">Register</a>
               `
           }
         </div>
       </div>
     </div>
 
-    <!-- Mobile nav links for guests -->
     ${
       !isLoggedIn()
         ? `<div id="mobileMenu" class="md:hidden hidden flex-col gap-2 mt-4 text-sm font-medium">
@@ -58,7 +49,7 @@ export function Navbar() {
     }
   `;
 
-  // 📌 Event Listeners
+  // 📌 SPA Navigation + Interactivity
   setTimeout(() => {
     nav.querySelectorAll("[data-link]").forEach((link) => {
       link.addEventListener("click", (e) => {
@@ -82,7 +73,7 @@ export function Navbar() {
     if (sidebarToggle) {
       sidebarToggle.addEventListener("click", () => {
         const sidebar = document.getElementById("mainSidebar");
-        sidebar?.classList.toggle("-translate-x-full");
+        if (sidebar) sidebar.classList.toggle("-translate-x-full");
       });
     }
 
@@ -92,19 +83,23 @@ export function Navbar() {
         document.getElementById("mobileMenu")?.classList.toggle("hidden");
       });
     }
-  }, 100);
+  }, 50);
 
   return nav;
 }
 
-// 🔐 Check login
+// ✅ Check login status
 function isLoggedIn() {
   return localStorage.getItem("user") !== null;
 }
 
-// 🙋 Get user name
+// 🙋 Extract user first name
 function getUserName() {
-  const user = JSON.parse(localStorage.getItem("user"));
-  const fullName = user?.full_name || "User";
-  return fullName.split(" ")[0]; // Get only the first name
+  try {
+    const user = JSON.parse(localStorage.getItem("user"));
+    const fullName = user?.full_name || "User";
+    return fullName.split(" ")[0];
+  } catch {
+    return "User";
+  }
 }

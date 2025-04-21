@@ -1,3 +1,4 @@
+// 📁 src/index.js
 import { Navbar } from "./components/Navbar.js";
 import { Footer } from "./components/Footer.js";
 import { Sidebar } from "./components/Sidebar.js";
@@ -36,7 +37,7 @@ window.addEventListener("DOMContentLoaded", () => {
 function handleRouting() {
   const app = document.getElementById("app");
   const path = window.location.pathname;
-  const loggedIn = isLoggedIn();
+  const loggedIn = !!localStorage.getItem("user");
 
   app.innerHTML = "";
 
@@ -55,72 +56,74 @@ function handleRouting() {
   const navbar = Navbar();
   document.body.insertBefore(navbar, app);
 
-  // Page rendering
+  // Page routing
   switch (path) {
     case "/":
     case "/home":
       app.appendChild(Home());
-      break;
+      document.body.appendChild(Footer()); // ✅ ensure footer on homepage
+      return;
     case "/about":
       app.appendChild(About());
-      break;
+      document.body.appendChild(Footer());
+      return;
     case "/login":
       app.appendChild(
         Login({
           onSuccess: () => {
+            // ✅ Login success now re-renders layout correctly
             history.pushState({}, "", "/resources");
             window.dispatchEvent(new Event("popstate"));
           },
         })
       );
-      break;
+      document.body.appendChild(Footer());
+      return;
     case "/register":
       app.appendChild(Register());
-      break;
+      document.body.appendChild(Footer());
+      return;
     case "/dashboard":
       app.appendChild(DashboardLayout(() => Dashboard()));
-      break;
+      document.body.appendChild(Footer());
+      return;
     case "/admin":
       app.appendChild(DashboardLayout(() => AdminPanel()));
-      break;
+      document.body.appendChild(Footer());
+      return;
     case "/resources":
       app.appendChild(DashboardLayout(() => ResourceCategoryPage()));
-      break;
+      document.body.appendChild(Footer());
+      return;
     case "/resources/primary":
       app.appendChild(DashboardLayout(() => LevelDetailPage("primary")));
-      break;
+      document.body.appendChild(Footer());
+      return;
     case "/resources/highschool":
       app.appendChild(DashboardLayout(() => LevelDetailPage("highschool")));
-      break;
-    default:
-      if (
-        /^\/resources\/(primary|highschool)\/(notes|exams|ebooks|tutorials|schemes|lessons)$/.test(
-          path
-        )
-      ) {
-        const [, level, category] = path.split("/");
-        app.appendChild(
-          DashboardLayout(() => ResourceCategoryPage(level, category))
-        );
-      } else {
-        app.innerHTML = `<div class="text-center py-20 text-red-600 text-xl">404 - Page Not Found</div>`;
-      }
+      document.body.appendChild(Footer());
+      return;
   }
 
-  // Append footer
-  const footer = Footer();
-  document.body.appendChild(footer);
+  const match = path.match(
+    /^\/resources\/(primary|highschool)\/(notes|exams|ebooks|tutorials|schemes|lessons)$/
+  );
+  if (match) {
+    const [, level, category] = match;
+    app.appendChild(
+      DashboardLayout(() => ResourceCategoryPage(level, category))
+    );
+    document.body.appendChild(Footer()); // ✅ ensure footer on resource category pages
+  } else {
+    app.innerHTML = `<div class="text-center py-20 text-red-600 text-xl">404 - Page Not Found</div>`;
+    document.body.appendChild(Footer());
+  }
 
-  // Post-render behaviors
   setupDarkModeToggle();
   animateFooterOnScroll();
 }
 
-// Helper functions
-function isLoggedIn() {
-  return !!localStorage.getItem("user");
-}
-
+// Theme toggle
 function setupDarkModeToggle() {
   const toggle = document.getElementById("darkToggle");
   const root = document.documentElement;
@@ -131,6 +134,7 @@ function setupDarkModeToggle() {
   }
 }
 
+// Animate footer
 function animateFooterOnScroll() {
   const footer = document.getElementById("main-footer");
   if (!footer) return;
