@@ -18,8 +18,9 @@ def create_app():
     # Enable CORS for frontend communication
     CORS(app, supports_credentials=True)
 
-    # Load configuration from config.py
-    app.config.from_object("app.config.Config")
+    # ✅ FIX: Import the Config object directly (avoids import_string error)
+    from .config import Config
+    app.config.from_object(Config)
 
     # Initialize DB and Migrate
     db.init_app(app)
