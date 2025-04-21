@@ -1,1 +1,60 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Env files
+.env
+*.env
+
+# Google Cloud credentials
 *.json
+
+# Database
+instance/
+*.db
+*.sqlite3
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# Pytest
+.pytest_cache/
+
+# Migrations (keep versions if you want to track migrations)
+migrations/*.pyc
+migrations/__pycache__/
+migrations/versions/__pycache__/
+
+# IDEs
+.vscode/
+.idea/
+
+# Render deploy file (optional)
+render.yaml
+
