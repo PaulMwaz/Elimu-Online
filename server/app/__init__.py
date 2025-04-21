@@ -18,7 +18,6 @@ def create_app():
     # Enable CORS for frontend communication
     CORS(app, supports_credentials=True)
 
-
     # Load configuration from config.py
     app.config.from_object("app.config.Config")
 
@@ -39,8 +38,9 @@ def create_app():
     app.register_blueprint(test_routes)
     app.register_blueprint(file_routes)
 
-    # ✅ Auto-create tables (only useful in dev; consider using migrations in prod)
-    with app.app_context():
-        db.create_all()
+    # ✅ Auto-create tables in development only
+    if os.getenv("FLASK_ENV") == "development":
+        with app.app_context():
+            db.create_all()
 
     return app
