@@ -10,9 +10,8 @@ services:
       - key: GOOGLE_APPLICATION_CREDENTIALS
         value: gcs_key.json
       - key: SECRET_KEY
-        value: your_secret_key_here
+        value: your_secret_here
       - key: DATABASE_URL
         value: your_database_url_here
       - key: GCS_BUCKET_NAME
-        value: your_bucket_name_here
-    autoDeploy: true
+        value: your_bucket_here
