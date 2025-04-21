@@ -1,4 +1,4 @@
-from .app import create_app  # ✅ Use relative import
+from app import create_app  # ✅ absolute import works for gunicorn
 import os
 
 app = create_app()
