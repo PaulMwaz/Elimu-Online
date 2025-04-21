@@ -1,9 +1,9 @@
-from flask import Blueprint, jsonify, request
-from app.models.resource import Resource
-from app.utils.auth_utils import login_required
-from app import db
+from flask import Blueprint, jsonify
+from ..models.resource import Resource
+from ..utils.auth_utils import login_required
 
 resource_routes = Blueprint("resource_routes", __name__)
+
 
 @resource_routes.route("/api/resources", methods=["GET"])
 @login_required

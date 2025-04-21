@@ -1,9 +1,9 @@
 from flask import Blueprint, request, jsonify
-from app.utils.gcs_helper import upload_to_gcs
+from ..utils.gcs_helper import upload_to_gcs
 import os
 
-# ✅ Define the Blueprint
 test_routes = Blueprint("test_routes", __name__)
+
 
 # ✅ Health check endpoint
 @test_routes.route("/", methods=["GET"])

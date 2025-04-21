@@ -1,8 +1,9 @@
 from flask import Blueprint, request, jsonify, session
-from ..models.user import User  # ✅ Use relative import to avoid module errors on Render
+from ..models.user import User
 from .. import db
 
 auth_routes = Blueprint("auth_routes", __name__)
+
 
 # ✅ Register a new user
 @auth_routes.route("/api/register", methods=["POST"])

@@ -1,4 +1,4 @@
-from .. import db  # Relative import from app package
+from .. import db
 
 class Purchase(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -7,3 +7,4 @@ class Purchase(db.Model):
 
     user = db.relationship("User", backref="purchases")
     resource = db.relationship("Resource", backref="purchases")
+

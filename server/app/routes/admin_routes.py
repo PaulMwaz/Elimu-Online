@@ -1,11 +1,12 @@
 from flask import Blueprint, request, jsonify
-from .. import db  # ✅ Use relative import to prevent module import errors
+from .. import db
 from ..models.resource import Resource
 from ..models.category import Category
 from ..utils.auth_utils import admin_required
 from ..utils.gcs_helper import upload_to_gcs
 
 admin_routes = Blueprint("admin_routes", __name__)
+
 
 @admin_routes.route("/api/admin/upload", methods=["POST"])
 @admin_required

@@ -1,4 +1,4 @@
-from .. import db  # Relative import of db from parent package
+from .. import db
 
 class Resource(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -9,3 +9,4 @@ class Resource(db.Model):
 
     users = db.relationship("User", secondary="user_resources", back_populates="resources")
     category = db.relationship("Category", back_populates="resources")
+

@@ -2,8 +2,10 @@ from flask import Blueprint, request, jsonify
 from google.cloud import storage
 import os
 from urllib.parse import unquote
+from ..utils.auth_utils import admin_required
 
 file_routes = Blueprint("file_routes", __name__)
+
 BUCKET_NAME = os.getenv("GCS_BUCKET_NAME")
 
 # ✅ Helper: Initialize GCS client and bucket
