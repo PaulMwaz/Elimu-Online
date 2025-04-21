@@ -1,4 +1,4 @@
-from app import db
+from .. import db  # ✅ Relative import from the parent app package
 
 class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True)

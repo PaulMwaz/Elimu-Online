@@ -1,9 +1,9 @@
 from flask import Blueprint, request, jsonify
-from app import db
-from app.models.resource import Resource
-from app.models.category import Category
-from app.utils.auth_utils import admin_required
-from app.utils.gcs_helper import upload_to_gcs
+from .. import db  # ✅ Use relative import to prevent module import errors
+from ..models.resource import Resource
+from ..models.category import Category
+from ..utils.auth_utils import admin_required
+from ..utils.gcs_helper import upload_to_gcs
 
 admin_routes = Blueprint("admin_routes", __name__)
 
@@ -21,13 +21,22 @@ def upload_resource():
     try:
         file_url = upload_to_gcs("your-gcs-bucket-name", file, f"resources/{file.filename}")
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": f"Upload failed: {str(e)}"}), 500
 
-    resource = Resource(title=title, description=description, file_url=file_url, category_id=category_id)
+    resource = Resource(
+        title=title,
+        description=description,
+        file_url=file_url,
+        category_id=int(category_id)  # ✅ Cast to int to match DB type
+    )
+
     db.session.add(resource)
     db.session.commit()
 
-    return jsonify({"message": "Resource uploaded successfully", "file_url": file_url})
+    return jsonify({
+        "message": "Resource uploaded successfully",
+        "file_url": file_url
+    }), 201
 
 
 @admin_routes.route("/api/admin/delete/<int:id>", methods=["DELETE"])
@@ -40,4 +49,6 @@ def delete_resource(id):
     db.session.delete(resource)
     db.session.commit()
 
-    return jsonify({"message": f"Resource '{resource.title}' deleted"})
+    return jsonify({
+        "message": f"Resource '{resource.title}' deleted"
+    }), 200

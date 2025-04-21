@@ -1,4 +1,4 @@
-from app import db
+from .. import db  # Relative import of db from parent package
 
 class Resource(db.Model):
     id = db.Column(db.Integer, primary_key=True)

@@ -1,12 +1,16 @@
-from app import db
+from .. import db  # ✅ Use relative import
 from werkzeug.security import generate_password_hash, check_password_hash
 
-user_resources = db.Table('user_resources',
+# ✅ Association table for many-to-many: User ↔ Resource
+user_resources = db.Table(
+    'user_resources',
     db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
     db.Column('resource_id', db.Integer, db.ForeignKey('resource.id'))
 )
 
 class User(db.Model):
+    __tablename__ = 'user'  # ✅ Explicit table name for clarity
+
     id = db.Column(db.Integer, primary_key=True)
     full_name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
