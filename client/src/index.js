@@ -10,6 +10,7 @@ import { Dashboard } from "./pages/Dashboard.js";
 import { AdminPanel } from "./pages/AdminPanel.js";
 import { LevelDetailPage } from "./pages/LevelDetailPage.js";
 import { ResourceCategoryPage } from "./pages/ResourceCategoryPage.js";
+import { GuestResourcePage } from "./pages/GuestResourcePage.js";
 import { DashboardLayout } from "./layouts/DashboardLayout.js";
 
 window.addEventListener("DOMContentLoaded", () => {
@@ -29,11 +30,10 @@ window.addEventListener("DOMContentLoaded", () => {
   app.classList.add("flex-grow");
 
   handleRouting();
-
   window.addEventListener("popstate", handleRouting);
 });
 
-// Routing + layout handler
+// 🔁 SPA Routing Handler
 function handleRouting() {
   const app = document.getElementById("app");
   const path = window.location.pathname;
@@ -41,89 +41,95 @@ function handleRouting() {
 
   app.innerHTML = "";
 
-  // Remove old navbar/sidebar/footer
+  // Remove old layout elements
   document.querySelector("nav")?.remove();
   document.querySelector("aside")?.remove();
   document.querySelector("footer")?.remove();
 
-  // Append sidebar if logged in
+  // ✅ Sidebar for logged in users only
   if (loggedIn) {
     const sidebar = Sidebar();
     document.body.insertBefore(sidebar, app);
   }
 
-  // Insert Navbar (after Sidebar)
+  // ✅ Navbar for everyone
   const navbar = Navbar();
   document.body.insertBefore(navbar, app);
 
-  // Page routing
+  // ✅ Routes
   switch (path) {
     case "/":
     case "/home":
       app.appendChild(Home());
-      document.body.appendChild(Footer()); // ✅ ensure footer on homepage
-      return;
+      break;
+
     case "/about":
       app.appendChild(About());
-      document.body.appendChild(Footer());
-      return;
+      break;
+
     case "/login":
       app.appendChild(
         Login({
           onSuccess: () => {
-            // ✅ Login success now re-renders layout correctly
             history.pushState({}, "", "/resources");
             window.dispatchEvent(new Event("popstate"));
           },
         })
       );
-      document.body.appendChild(Footer());
-      return;
+      break;
+
     case "/register":
       app.appendChild(Register());
-      document.body.appendChild(Footer());
-      return;
+      break;
+
     case "/dashboard":
       app.appendChild(DashboardLayout(() => Dashboard()));
-      document.body.appendChild(Footer());
-      return;
+      break;
+
     case "/admin":
       app.appendChild(DashboardLayout(() => AdminPanel()));
-      document.body.appendChild(Footer());
-      return;
+      break;
+
     case "/resources":
-      app.appendChild(DashboardLayout(() => ResourceCategoryPage()));
-      document.body.appendChild(Footer());
-      return;
+      if (loggedIn) {
+        app.appendChild(DashboardLayout(() => ResourceCategoryPage()));
+      } else {
+        app.appendChild(GuestResourcePage());
+      }
+      break;
+
     case "/resources/primary":
       app.appendChild(DashboardLayout(() => LevelDetailPage("primary")));
-      document.body.appendChild(Footer());
-      return;
+      break;
+
     case "/resources/highschool":
       app.appendChild(DashboardLayout(() => LevelDetailPage("highschool")));
-      document.body.appendChild(Footer());
-      return;
+      break;
+
+    default:
+      const match = path.match(
+        /^\/resources\/(primary|highschool)\/(notes|exams|ebooks|tutorials|schemes|lessons)$/
+      );
+
+      if (match) {
+        const [, level, category] = match;
+        app.appendChild(
+          DashboardLayout(() => ResourceCategoryPage(level, category))
+        );
+      } else {
+        app.innerHTML = `<div class="text-center py-20 text-red-600 text-xl">404 - Page Not Found</div>`;
+      }
   }
 
-  const match = path.match(
-    /^\/resources\/(primary|highschool)\/(notes|exams|ebooks|tutorials|schemes|lessons)$/
-  );
-  if (match) {
-    const [, level, category] = match;
-    app.appendChild(
-      DashboardLayout(() => ResourceCategoryPage(level, category))
-    );
-    document.body.appendChild(Footer()); // ✅ ensure footer on resource category pages
-  } else {
-    app.innerHTML = `<div class="text-center py-20 text-red-600 text-xl">404 - Page Not Found</div>`;
-    document.body.appendChild(Footer());
-  }
+  // ✅ Always show footer after main content
+  const footer = Footer();
+  document.body.appendChild(footer);
 
   setupDarkModeToggle();
   animateFooterOnScroll();
 }
 
-// Theme toggle
+// 🌙 Dark mode toggle
 function setupDarkModeToggle() {
   const toggle = document.getElementById("darkToggle");
   const root = document.documentElement;
@@ -134,7 +140,7 @@ function setupDarkModeToggle() {
   }
 }
 
-// Animate footer
+// 🧾 Animate footer appearance
 function animateFooterOnScroll() {
   const footer = document.getElementById("main-footer");
   if (!footer) return;
