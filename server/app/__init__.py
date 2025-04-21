@@ -12,14 +12,17 @@ load_dotenv()
 db = SQLAlchemy()
 migrate = Migrate()
 
+# ✅ Import the config class directly (relative import)
+from .config import Config
+
 def create_app():
     app = Flask(__name__)
 
     # Enable CORS for frontend communication
     CORS(app, supports_credentials=True)
 
-    # Load configuration from config.py
-    app.config.from_object("app.config.Config")
+    # ✅ Use the directly imported Config object
+    app.config.from_object(Config)
 
     # Initialize DB and Migrate
     db.init_app(app)
