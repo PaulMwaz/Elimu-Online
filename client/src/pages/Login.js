@@ -5,7 +5,6 @@ export function Login() {
   const user = JSON.parse(localStorage.getItem("user"));
   const isLoggedIn = user && user.full_name;
 
-  // ✅ Automatically switch between local and render backend
   const isLocal =
     window.location.hostname === "localhost" ||
     window.location.hostname === "127.0.0.1";
@@ -45,8 +44,8 @@ export function Login() {
     const loginBtn = document.getElementById("loginBtn");
     if (loginBtn) {
       loginBtn.addEventListener("click", async () => {
-        const email = document.getElementById("loginEmail").value;
-        const password = document.getElementById("loginPassword").value;
+        const email = document.getElementById("loginEmail").value.trim();
+        const password = document.getElementById("loginPassword").value.trim();
 
         msgBox.innerHTML = "Logging in...";
 
@@ -61,16 +60,25 @@ export function Login() {
           const result = await res.json();
 
           if (res.ok) {
-            localStorage.setItem("user", JSON.stringify(result));
+            // ✅ Fix: Handle flat response structure
+            const userObject = {
+              full_name: result.full_name || "User",
+              email: result.email || email,
+              is_admin: result.is_admin || false,
+            };
 
-            // ✅ Show toast when redirected to dashboard
+            localStorage.setItem("user", JSON.stringify(userObject));
+            localStorage.setItem("token", result.token);
+
             sessionStorage.setItem("showToast", "1");
 
-            msgBox.innerHTML = `<span class='text-green-600'>✅ Welcome, ${result.full_name}!</span>`;
-            history.pushState({}, "", "/dashboard");
+            msgBox.innerHTML = `<span class='text-green-600'>✅ Welcome, ${userObject.full_name}!</span>`;
+            history.pushState({}, "", "/resources");
             window.dispatchEvent(new Event("popstate"));
           } else {
-            msgBox.innerHTML = `<span class='text-red-600'>❌ ${result.error}</span>`;
+            msgBox.innerHTML = `<span class='text-red-600'>❌ ${
+              result.error || "Login failed"
+            }</span>`;
           }
         } catch (err) {
           msgBox.innerHTML = `<span class='text-red-600'>❌ Network error: ${err.message}</span>`;
@@ -87,6 +95,8 @@ export function Login() {
             credentials: "include",
           });
           localStorage.removeItem("user");
+          localStorage.removeItem("token");
+
           history.pushState({}, "", "/login");
           window.dispatchEvent(new Event("popstate"));
         } catch (err) {

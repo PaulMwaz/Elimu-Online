@@ -7,35 +7,40 @@ from ..utils.gcs_helper import upload_to_gcs
 
 admin_routes = Blueprint("admin_routes", __name__)
 
-
 @admin_routes.route("/api/admin/upload", methods=["POST"])
 @admin_required
 def upload_resource():
-    title = request.form.get("title")
-    description = request.form.get("description")
-    category_id = request.form.get("category_id")
+    title = request.form.get("title") or request.files.get("file").filename
+    level = request.form.get("level")
+    form_class = request.form.get("class")
+    category = request.form.get("category")
+    subject = request.form.get("subject")
     file = request.files.get("file")
 
-    if not all([title, description, category_id, file]):
-        return jsonify({"error": "Missing fields"}), 400
+    if not all([level, form_class, category, subject, file]):
+        return jsonify({"error": "Missing required fields"}), 400
 
     try:
-        file_url = upload_to_gcs("your-gcs-bucket-name", file, f"resources/{file.filename}")
+        # Upload to GCS under a unique filename path
+        file_url = upload_to_gcs("your-gcs-bucket-name", file, f"resources/{category}/{file.filename}")
     except Exception as e:
         return jsonify({"error": f"Upload failed: {str(e)}"}), 500
 
     resource = Resource(
         title=title,
-        description=description,
-        file_url=file_url,
-        category_id=int(category_id)  # ✅ Cast to int to match DB type
+        filename=file.filename,
+        url=file_url,
+        level=level,
+        class_name=form_class,
+        category=category,
+        subject=subject
     )
 
     db.session.add(resource)
     db.session.commit()
 
     return jsonify({
-        "message": "Resource uploaded successfully",
+        "message": "✅ Resource uploaded successfully",
         "file_url": file_url
     }), 201
 
@@ -45,11 +50,11 @@ def upload_resource():
 def delete_resource(id):
     resource = Resource.query.get(id)
     if not resource:
-        return jsonify({"error": "Resource not found"}), 404
+        return jsonify({"error": "❌ Resource not found"}), 404
 
     db.session.delete(resource)
     db.session.commit()
 
     return jsonify({
-        "message": f"Resource '{resource.title}' deleted"
+        "message": f"✅ Resource '{resource.title}' deleted"
     }), 200

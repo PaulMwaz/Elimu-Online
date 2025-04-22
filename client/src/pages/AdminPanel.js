@@ -1,211 +1,150 @@
-// ✅ Full Updated AdminPanel.js
-// Includes: Upload, Spinner, List Files, Preview Modal, Rename + Delete
-
 export function AdminPanel() {
+  const section = document.createElement("section");
+  section.className = "container py-16 px-4";
+
+  const isAuthenticated = sessionStorage.getItem("adminLoggedIn") === "true";
   const isLocal =
-    window.location.hostname === "localhost" ||
-    window.location.hostname === "127.0.0.1";
+    location.hostname === "localhost" || location.hostname === "127.0.0.1";
   const API_BASE_URL = isLocal
     ? "http://localhost:5555"
     : "https://elimu-online.onrender.com";
 
-  const section = document.createElement("section");
-  section.className = "container py-12 text-center";
+  if (!isAuthenticated) {
+    section.innerHTML = `
+      <div class="max-w-md mx-auto text-center">
+        <h2 class="text-3xl font-bold mb-4 text-blue-700">🔐 Admin Login</h2>
+        <div class="bg-white p-6 rounded shadow space-y-4">
+          <input id="adminUsername" type="text" placeholder="Username" class="w-full p-2 border rounded" />
+          <input id="adminPassword" type="password" placeholder="Password" class="w-full p-2 border rounded" />
+          <button id="adminLoginBtn" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Login</button>
+          <div id="adminLoginMsg" class="text-sm text-red-600 mt-2"></div>
+        </div>
+      </div>
+    `;
+
+    setTimeout(() => {
+      const loginBtn = document.getElementById("adminLoginBtn");
+      loginBtn.addEventListener("click", () => {
+        const username = document.getElementById("adminUsername").value.trim();
+        const password = document.getElementById("adminPassword").value.trim();
+
+        if (username === "Paul Kyalo" && password === "1234567") {
+          sessionStorage.setItem("adminLoggedIn", "true");
+          history.pushState({}, "", "/admin");
+          window.dispatchEvent(new Event("popstate"));
+        } else {
+          document.getElementById("adminLoginMsg").textContent =
+            "❌ Invalid credentials";
+        }
+      });
+    }, 100);
+
+    return section;
+  }
 
   section.innerHTML = `
-    <h1 class="text-3xl font-bold text-secondary mb-6">Admin Panel</h1>
+    <div class="max-w-2xl mx-auto">
+      <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold text-blue-700">Admin Upload Panel</h1>
+        <button id="adminLogoutBtn" class="bg-red-600 text-white px-4 py-1 rounded hover:bg-red-700">Logout</button>
+      </div>
 
-    <div class="max-w-md mx-auto bg-white p-6 rounded shadow">
-      <form id="admin-upload-form" enctype="multipart/form-data">
-        <label class="block mb-2 text-sm font-medium text-gray-700">Select Category</label>
-        <select id="categorySelect" class="block w-full mb-4 p-2 border rounded">
-          <option value="primary">Primary</option>
-          <option value="highschool">High School</option>
-        </select>
+      <form id="admin-upload-form" enctype="multipart/form-data" class="bg-white p-6 rounded shadow space-y-4">
+        <div>
+          <label class="block text-sm font-medium mb-1">Level</label>
+          <select id="levelSelect" class="w-full p-2 border rounded">
+            <option value="primary">Primary School</option>
+            <option value="highschool">High School</option>
+          </select>
+        </div>
 
-        <label class="block mb-2 text-sm font-medium text-gray-700">Select File to Upload</label>
-        <input type="file" id="uploadInput" name="file" class="block w-full p-2 border rounded" required />
+        <div>
+          <label class="block text-sm font-medium mb-1">Class/Form</label>
+          <select id="classSelect" class="w-full p-2 border rounded">
+            <option value="form2">Form 2</option>
+            <option value="form3">Form 3</option>
+            <option value="form4">Form 4</option>
+          </select>
+        </div>
 
-        <button type="submit" class="btn mt-4 w-full">Upload File</button>
-        <div id="uploadProgress" class="mt-2 text-sm text-blue-600 hidden">Uploading...</div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Category</label>
+          <select id="categorySelect" class="w-full p-2 border rounded">
+            <option value="notes">Notes</option>
+            <option value="exams">Exams</option>
+            <option value="ebooks">E-Books</option>
+            <option value="tutorials">Tutorials</option>
+            <option value="schemes">Schemes</option>
+            <option value="lessons">Lesson Plans</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1">Subject</label>
+          <input type="text" id="subjectInput" placeholder="e.g. Mathematics" class="w-full p-2 border rounded" required />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1">Select File</label>
+          <input type="file" id="uploadInput" class="w-full p-2 border rounded" required />
+        </div>
+
+        <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Upload File</button>
+        <div id="uploadResponse" class="text-sm text-center mt-2"></div>
       </form>
-
-      <div id="uploadResponse" class="mt-4 text-sm text-center"></div>
     </div>
-
-    <div id="fileSections" class="mt-10 text-left"></div>
   `;
 
   setTimeout(() => {
+    document.getElementById("adminLogoutBtn").addEventListener("click", () => {
+      sessionStorage.removeItem("adminLoggedIn");
+      history.pushState({}, "", "/admin");
+      window.dispatchEvent(new Event("popstate"));
+    });
+
     const form = document.getElementById("admin-upload-form");
-    const progress = document.getElementById("uploadProgress");
+    const responseBox = document.getElementById("uploadResponse");
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const fileInput = document.getElementById("uploadInput");
+      const file = document.getElementById("uploadInput").files[0];
+      const level = document.getElementById("levelSelect").value;
+      const formClass = document.getElementById("classSelect").value;
       const category = document.getElementById("categorySelect").value;
-      const responseBox = document.getElementById("uploadResponse");
+      const subject = document.getElementById("subjectInput").value;
 
-      if (!fileInput.files.length) {
-        responseBox.innerHTML = `<span class="text-red-600">❌ Please select a file to upload.</span>`;
+      if (!file) {
+        responseBox.innerHTML = `<span class="text-red-600">❌ Please select a file.</span>`;
         return;
       }
 
       const formData = new FormData();
-      formData.append("file", fileInput.files[0]);
+      formData.append("file", file);
+      formData.append("level", level);
+      formData.append("class", formClass);
       formData.append("category", category);
-
-      progress.classList.remove("hidden");
+      formData.append("subject", subject);
 
       try {
-        const res = await fetch(`${API_BASE_URL}/api/test-upload`, {
+        const res = await fetch(`${API_BASE_URL}/api/admin/upload`, {
           method: "POST",
           body: formData,
         });
 
         const result = await res.json();
-        progress.classList.add("hidden");
-
-        if (res.ok && result.file_url) {
-          responseBox.innerHTML = `
-            <div class="text-green-600">
-              ✅ Upload Successful to <strong>${category}/</strong><br>
-              <a href="${result.file_url}" target="_blank" class="underline text-blue-600 hover:text-blue-800">${result.file_url}</a>
-            </div>
-          `;
-          fileInput.value = "";
-          loadFilesByCategory();
+        if (res.ok) {
+          responseBox.innerHTML = `<span class="text-green-600">✅ File uploaded: <a href="${result.file_url}" class="underline" target="_blank">${result.file_url}</a></span>`;
+          form.reset();
         } else {
-          responseBox.innerHTML = `<span class="text-red-600">❌ Upload failed: ${result.error}</span>`;
+          responseBox.innerHTML = `<span class="text-red-600">❌ Upload failed: ${
+            result.error || "Try again."
+          }</span>`;
         }
       } catch (err) {
-        progress.classList.add("hidden");
-        responseBox.innerHTML = `<span class="text-red-600">❌ Error: ${err.message}</span>`;
+        responseBox.innerHTML = `<span class="text-red-600">❌ Network error: ${err.message}</span>`;
       }
     });
-
-    loadFilesByCategory();
-
-    async function loadFilesByCategory() {
-      const fileSections = document.getElementById("fileSections");
-      fileSections.innerHTML = "";
-
-      for (let category of ["primary", "highschool"]) {
-        const res = await fetch(`${API_BASE_URL}/api/files/${category}`);
-        const files = await res.json();
-
-        if (files.length > 0) {
-          const categoryTitle =
-            category === "primary"
-              ? "Primary Resources"
-              : "High School Resources";
-          const container = document.createElement("div");
-          container.className = "mb-6";
-          container.innerHTML = `<h2 class="text-xl font-semibold mb-3">${categoryTitle}</h2>`;
-
-          files.forEach((file) => {
-            const fileRow = document.createElement("div");
-            fileRow.className =
-              "flex justify-between items-center bg-white border p-3 rounded mb-2";
-
-            fileRow.innerHTML = `
-              <a href="${file.url}" target="_blank" class="text-blue-600 underline max-w-xs truncate">${file.name}</a>
-              <div class="flex gap-2">
-                <button class="btn-preview text-sm text-green-600 underline" data-url="${file.url}">Preview</button>
-                <button class="btn-rename text-sm text-yellow-600 underline" data-name="${file.name}" data-category="${category}">Rename</button>
-                <button class="delete-btn text-sm text-red-600 underline">Delete</button>
-              </div>
-            `;
-
-            fileRow
-              .querySelector(".delete-btn")
-              .addEventListener("click", async () => {
-                const confirmDelete = confirm(`Delete ${file.name}?`);
-                if (confirmDelete) {
-                  const del = await fetch(
-                    `${API_BASE_URL}/api/files/${category}/${encodeURIComponent(
-                      file.name
-                    )}`,
-                    {
-                      method: "DELETE",
-                    }
-                  );
-                  const msg = await del.json();
-                  alert(msg.message || msg.error);
-                  loadFilesByCategory();
-                }
-              });
-
-            container.appendChild(fileRow);
-          });
-
-          fileSections.appendChild(container);
-
-          // Attach preview & rename actions after render
-          document.querySelectorAll(".btn-preview").forEach((btn) => {
-            btn.addEventListener("click", () => {
-              showPreviewModal(btn.dataset.url);
-            });
-          });
-
-          document.querySelectorAll(".btn-rename").forEach((btn) => {
-            btn.addEventListener("click", async () => {
-              const filename = btn.dataset.name;
-              const category = btn.dataset.category;
-              const newName = prompt(`Rename \"${filename}\" to:`, filename);
-              if (!newName || newName === filename) return;
-
-              const res = await fetch(
-                `${API_BASE_URL}/api/files/${category}/${encodeURIComponent(
-                  filename
-                )}`,
-                {
-                  method: "PATCH",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ new_name: newName }),
-                }
-              );
-
-              const result = await res.json();
-              if (res.ok) {
-                alert("✅ Renamed successfully.");
-                loadFilesByCategory();
-              } else {
-                alert(`❌ Rename failed: ${result.error}`);
-              }
-            });
-          });
-        }
-      }
-    }
   }, 100);
 
   return section;
-}
-
-// 🔍 Preview PDF modal
-export function showPreviewModal(fileUrl) {
-  let modal = document.getElementById("previewModal");
-
-  if (!modal) {
-    modal = document.createElement("div");
-    modal.id = "previewModal";
-    modal.className =
-      "fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50";
-    modal.innerHTML = `
-      <div class="bg-white p-6 rounded max-w-4xl w-full relative">
-        <button id="closePreviewBtn" class="absolute top-2 right-2 text-red-600 text-lg font-bold">✖</button>
-        <iframe src="${fileUrl}" class="w-full h-[500px] border rounded"></iframe>
-      </div>
-    `;
-    document.body.appendChild(modal);
-  } else {
-    modal.querySelector("iframe").src = fileUrl;
-    modal.style.display = "flex";
-  }
-
-  document.getElementById("closePreviewBtn").onclick = () => {
-    modal.style.display = "none";
-    modal.querySelector("iframe").src = "";
-  };
 }

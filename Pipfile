@@ -6,6 +6,9 @@ name = "pypi"
 [packages]
 flask = "*"
 flask-migrate = "*"
+flask-cors = "*"
+python-dotenv = "*"
+google-cloud-storage = "*"
 
 [dev-packages]
 

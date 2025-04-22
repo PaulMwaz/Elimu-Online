@@ -37,7 +37,10 @@ window.addEventListener("DOMContentLoaded", () => {
 function handleRouting() {
   const app = document.getElementById("app");
   const path = window.location.pathname;
-  const loggedIn = !!localStorage.getItem("user");
+  const user = JSON.parse(localStorage.getItem("user"));
+  const loggedIn = !!user;
+  const isAdmin = loggedIn && user.is_admin;
+  const isAdminRoute = path === "/admin";
 
   app.innerHTML = "";
 
@@ -46,17 +49,19 @@ function handleRouting() {
   document.querySelector("aside")?.remove();
   document.querySelector("footer")?.remove();
 
-  // ✅ Sidebar for logged in users only
-  if (loggedIn) {
+  // ✅ Show Sidebar only if not on Admin page
+  if (loggedIn && !isAdminRoute) {
     const sidebar = Sidebar();
     document.body.insertBefore(sidebar, app);
   }
 
-  // ✅ Navbar for everyone
-  const navbar = Navbar();
-  document.body.insertBefore(navbar, app);
+  // ✅ Show Navbar only if not on Admin page
+  if (!isAdminRoute) {
+    const navbar = Navbar();
+    document.body.insertBefore(navbar, app);
+  }
 
-  // ✅ Routes
+  // ✅ Route logic
   switch (path) {
     case "/":
     case "/home":
@@ -87,7 +92,8 @@ function handleRouting() {
       break;
 
     case "/admin":
-      app.appendChild(DashboardLayout(() => AdminPanel()));
+      // ✅ Admin Panel is standalone — no layout, sidebar, footer, or user navbar
+      app.appendChild(AdminPanel());
       break;
 
     case "/resources":
@@ -121,12 +127,13 @@ function handleRouting() {
       }
   }
 
-  // ✅ Always show footer after main content
-  const footer = Footer();
-  document.body.appendChild(footer);
-
-  setupDarkModeToggle();
-  animateFooterOnScroll();
+  // ✅ Show footer only if NOT on admin panel
+  if (!isAdminRoute) {
+    const footer = Footer();
+    document.body.appendChild(footer);
+    setupDarkModeToggle();
+    animateFooterOnScroll();
+  }
 }
 
 // 🌙 Dark mode toggle
