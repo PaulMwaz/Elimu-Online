@@ -2,6 +2,13 @@
 // Includes: Upload, Spinner, List Files, Preview Modal, Rename + Delete
 
 export function AdminPanel() {
+  const isLocal =
+    window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1";
+  const API_BASE_URL = isLocal
+    ? "http://localhost:5555"
+    : "https://elimu-online.onrender.com";
+
   const section = document.createElement("section");
   section.className = "container py-12 text-center";
 
@@ -51,7 +58,7 @@ export function AdminPanel() {
       progress.classList.remove("hidden");
 
       try {
-        const res = await fetch("http://localhost:5555/api/test-upload", {
+        const res = await fetch(`${API_BASE_URL}/api/test-upload`, {
           method: "POST",
           body: formData,
         });
@@ -84,7 +91,7 @@ export function AdminPanel() {
       fileSections.innerHTML = "";
 
       for (let category of ["primary", "highschool"]) {
-        const res = await fetch(`http://localhost:5555/api/files/${category}`);
+        const res = await fetch(`${API_BASE_URL}/api/files/${category}`);
         const files = await res.json();
 
         if (files.length > 0) {
@@ -116,7 +123,7 @@ export function AdminPanel() {
                 const confirmDelete = confirm(`Delete ${file.name}?`);
                 if (confirmDelete) {
                   const del = await fetch(
-                    `http://localhost:5555/api/files/${category}/${encodeURIComponent(
+                    `${API_BASE_URL}/api/files/${category}/${encodeURIComponent(
                       file.name
                     )}`,
                     {
@@ -149,7 +156,7 @@ export function AdminPanel() {
               if (!newName || newName === filename) return;
 
               const res = await fetch(
-                `http://localhost:5555/api/files/${category}/${encodeURIComponent(
+                `${API_BASE_URL}/api/files/${category}/${encodeURIComponent(
                   filename
                 )}`,
                 {

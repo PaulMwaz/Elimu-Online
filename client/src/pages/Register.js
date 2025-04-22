@@ -2,6 +2,13 @@ export function Register() {
   const section = document.createElement("section");
   section.className = "container pt-28 pb-16 px-4 text-center";
 
+  const isLocal =
+    window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1";
+  const API_BASE_URL = isLocal
+    ? "http://localhost:5555"
+    : "https://elimu-online.onrender.com";
+
   section.innerHTML = `
     <h1 class="text-3xl font-bold text-secondary mb-4">Create Your Account</h1>
     <p class="text-gray-700 dark:text-gray-300 mb-6">Join Elimu-Online to access learning materials.</p>
@@ -9,7 +16,7 @@ export function Register() {
     <div class="max-w-md mx-auto text-left bg-white p-6 rounded shadow">
       <label class="block text-sm font-medium mb-1">Full Name</label>
       <div class="relative mb-4">
-        <span class="absolute top-2.5 left-3 text-gray-400">🧑‍🎓</span>
+        <span class="absolute top-2.5 left-3 text-gray-400">🧑🎓</span>
         <input id="registerName" type="text" placeholder="Full Name" class="w-full pl-10 pr-3 py-2 border rounded focus:outline-blue-500" autofocus />
       </div>
 
@@ -50,20 +57,22 @@ export function Register() {
     </div>
   `;
 
+  // 💡 Attach JS logic after DOM is inserted
   setTimeout(() => {
     const toggleBtn = document.getElementById("togglePassword");
     const passwordInput = document.getElementById("registerPassword");
     const confirmInput = document.getElementById("confirmPassword");
     const msgBox = document.getElementById("registerMessage");
 
-    // Show/hide password
+    // 👁 Show/hide password
     toggleBtn.addEventListener("click", () => {
       const isHidden = passwordInput.type === "password";
       passwordInput.type = isHidden ? "text" : "password";
+      confirmInput.type = isHidden ? "text" : "password";
       toggleBtn.textContent = isHidden ? "Hide" : "Show";
     });
 
-    // Link navigation
+    // 🌐 SPA Navigation
     document.querySelectorAll("[data-link]").forEach((link) => {
       link.addEventListener("click", (e) => {
         e.preventDefault();
@@ -72,7 +81,7 @@ export function Register() {
       });
     });
 
-    // Registration handler
+    // ✅ Registration Logic
     document
       .getElementById("registerBtn")
       .addEventListener("click", async () => {
@@ -97,7 +106,7 @@ export function Register() {
         msgBox.innerHTML = "Registering...";
 
         try {
-          const res = await fetch("http://localhost:5555/api/register", {
+          const res = await fetch(`${API_BASE_URL}/api/register`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ full_name, email, password, remember }),
@@ -108,7 +117,7 @@ export function Register() {
           if (res.ok) {
             msgBox.innerHTML = `<span class='text-green-600'>🎉 Successfully registered! You can now <a href="/login" data-link class="underline text-blue-600">login here</a>.</span>`;
 
-            // ✅ Clear all form fields
+            // ✅ Clear form
             document.getElementById("registerName").value = "";
             document.getElementById("registerEmail").value = "";
             passwordInput.value = "";

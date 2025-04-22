@@ -5,7 +5,13 @@ export function Login() {
   const user = JSON.parse(localStorage.getItem("user"));
   const isLoggedIn = user && user.full_name;
 
-  const API_BASE_URL = "https://elimu-online.onrender.com"; // ✅ Render backend
+  // ✅ Automatically switch between local and render backend
+  const isLocal =
+    window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1";
+  const API_BASE_URL = isLocal
+    ? "http://localhost:5555"
+    : "https://elimu-online.onrender.com";
 
   section.innerHTML = `
     <h1 class="text-3xl font-bold text-secondary mb-4">Login to Elimu-Online</h1>
@@ -48,7 +54,7 @@ export function Login() {
           const res = await fetch(`${API_BASE_URL}/api/login`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            credentials: "include", // ✅ Include cookies
+            credentials: "include",
             body: JSON.stringify({ email, password }),
           });
 
@@ -56,8 +62,12 @@ export function Login() {
 
           if (res.ok) {
             localStorage.setItem("user", JSON.stringify(result));
+
+            // ✅ Show toast when redirected to dashboard
+            sessionStorage.setItem("showToast", "1");
+
             msgBox.innerHTML = `<span class='text-green-600'>✅ Welcome, ${result.full_name}!</span>`;
-            history.pushState({}, "", "/resources");
+            history.pushState({}, "", "/dashboard");
             window.dispatchEvent(new Event("popstate"));
           } else {
             msgBox.innerHTML = `<span class='text-red-600'>❌ ${result.error}</span>`;

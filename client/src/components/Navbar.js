@@ -49,8 +49,8 @@ export function Navbar() {
     }
   `;
 
-  // 📌 SPA Navigation + Interactivity
   setTimeout(() => {
+    // 🧭 SPA Navigation
     nav.querySelectorAll("[data-link]").forEach((link) => {
       link.addEventListener("click", (e) => {
         e.preventDefault();
@@ -60,15 +60,13 @@ export function Navbar() {
       });
     });
 
+    // ✅ Attach logout event
     const logoutBtn = document.getElementById("logoutBtn");
     if (logoutBtn) {
-      logoutBtn.addEventListener("click", () => {
-        localStorage.removeItem("user");
-        history.pushState({}, "", "/");
-        window.dispatchEvent(new Event("popstate"));
-      });
+      logoutBtn.addEventListener("click", handleLogout);
     }
 
+    // ✅ Sidebar toggle for mobile (logged-in users)
     const sidebarToggle = document.getElementById("sidebarToggle");
     if (sidebarToggle) {
       sidebarToggle.addEventListener("click", () => {
@@ -77,6 +75,7 @@ export function Navbar() {
       });
     }
 
+    // ✅ Mobile menu toggle (for guests)
     const mobileToggle = document.getElementById("mobileMenuToggle");
     if (mobileToggle) {
       mobileToggle.addEventListener("click", () => {
@@ -88,12 +87,33 @@ export function Navbar() {
   return nav;
 }
 
-// ✅ Check login status
+// ✅ Handles logout & rerenders layout
+function handleLogout() {
+  const API_BASE_URL =
+    window.location.hostname === "localhost"
+      ? "http://localhost:5555"
+      : "https://elimu-online.onrender.com";
+
+  fetch(`${API_BASE_URL}/api/logout`, {
+    method: "POST",
+    credentials: "include",
+  })
+    .then(() => {
+      localStorage.removeItem("user");
+      history.pushState({}, "", "/login");
+      window.dispatchEvent(new Event("popstate"));
+    })
+    .catch((err) => {
+      console.error("Logout failed:", err.message);
+    });
+}
+
+// ✅ Checks if user is logged in
 function isLoggedIn() {
   return localStorage.getItem("user") !== null;
 }
 
-// 🙋 Extract user first name
+// ✅ Gets first name from localStorage
 function getUserName() {
   try {
     const user = JSON.parse(localStorage.getItem("user"));
