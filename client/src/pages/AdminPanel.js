@@ -23,53 +23,50 @@ export function AdminPanel() {
     `;
 
     setTimeout(() => {
-      const loginBtn = document.getElementById("adminLoginBtn");
-      loginBtn.addEventListener("click", async () => {
-        const email = document.getElementById("adminEmail").value.trim();
-        const password = document.getElementById("adminPassword").value.trim();
+      document
+        .getElementById("adminLoginBtn")
+        .addEventListener("click", async () => {
+          const email = document.getElementById("adminEmail").value.trim();
+          const password = document
+            .getElementById("adminPassword")
+            .value.trim();
 
-        if (!email || !password) {
-          document.getElementById("adminLoginMsg").textContent =
-            "❌ Enter both email and password.";
-          return;
-        }
-
-        try {
-          const res = await fetch(`${API_BASE_URL}/api/login`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ email, password }),
-          });
-
-          const result = await res.json();
-          console.log("🔍 Login result:", result); // Optional: for debugging
-
-          if (res.ok && result.user && result.user.is_admin) {
-            localStorage.setItem("adminToken", result.token);
-            history.pushState({}, "", "/admin");
-            window.dispatchEvent(new Event("popstate"));
-          } else if (res.ok && result.user && !result.user.is_admin) {
+          if (!email || !password) {
             document.getElementById("adminLoginMsg").textContent =
-              "❌ You are not an admin.";
-          } else {
-            document.getElementById("adminLoginMsg").textContent = `❌ ${
-              result.error || "Invalid credentials or not an admin."
-            }`;
+              "❌ Enter both email and password.";
+            return;
           }
-        } catch (err) {
-          document.getElementById(
-            "adminLoginMsg"
-          ).textContent = `❌ Login error: ${err.message}`;
-        }
-      });
+
+          try {
+            const res = await fetch(`${API_BASE_URL}/api/login`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ email, password }),
+            });
+
+            const result = await res.json();
+            if (res.ok && result.user && result.user.is_admin) {
+              localStorage.setItem("adminToken", result.token);
+              history.pushState({}, "", "/admin");
+              window.dispatchEvent(new Event("popstate"));
+            } else {
+              document.getElementById("adminLoginMsg").textContent =
+                "❌ " +
+                (result.error || "Invalid credentials or not an admin.");
+            }
+          } catch (err) {
+            document.getElementById(
+              "adminLoginMsg"
+            ).textContent = `❌ Login error: ${err.message}`;
+          }
+        });
     }, 100);
 
     return section;
   }
 
-  // ✅ Admin Panel View
   section.innerHTML = `
     <div class="max-w-2xl mx-auto">
       <div class="flex justify-between items-center mb-6">
@@ -120,6 +117,7 @@ export function AdminPanel() {
         <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Upload File</button>
         <div id="uploadResponse" class="text-sm text-center mt-2"></div>
       </form>
+      <div id="groupedFiles" class="mt-10 text-sm bg-gray-100 p-4 rounded overflow-auto max-h-[300px]"></div>
     </div>
   `;
 
@@ -132,9 +130,11 @@ export function AdminPanel() {
 
     const form = document.getElementById("admin-upload-form");
     const responseBox = document.getElementById("uploadResponse");
+    const groupedBox = document.getElementById("groupedFiles");
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
+
       const file = document.getElementById("uploadInput").files[0];
       const level = document.getElementById("levelSelect").value;
       const formClass = document.getElementById("classSelect").value;
@@ -142,14 +142,13 @@ export function AdminPanel() {
       const subject = document.getElementById("subjectInput").value;
 
       if (!file) {
-        responseBox.innerHTML = `<span class="text-red-600">❌ Please select a file.</span>`;
+        responseBox.innerHTML = `<div class="bg-red-100 text-red-800 p-3 rounded">❌ Please select a file.</div>`;
         return;
       }
 
       const formData = new FormData();
       formData.append("file", file);
       formData.append("level", level);
-      formData.append("class", formClass);
       formData.append("category", category);
       formData.append("subject", subject);
 
@@ -164,15 +163,52 @@ export function AdminPanel() {
 
         const result = await res.json();
         if (res.ok) {
-          responseBox.innerHTML = `<span class="text-green-600">✅ File uploaded: <a href="${result.file_url}" class="underline" target="_blank">${result.file_url}</a></span>`;
+          responseBox.innerHTML = `<div class="bg-green-100 text-green-800 p-3 rounded">✅ File uploaded: <a href="${result.file_url}" class="underline" target="_blank">${result.file_url}</a></div>`;
           form.reset();
+
+          // 🟢 Fetch and Display Grouped Files
+          groupedBox.innerHTML =
+            "<p class='text-blue-700 font-semibold mb-2'>📦 Uploaded Files:</p><div id='fileList'>⏳ Loading...</div>";
+
+          try {
+            const groupedRes = await fetch(`${API_BASE_URL}/api/files/grouped`);
+            const groupedData = await groupedRes.json();
+            const fileList = document.getElementById("fileList");
+            fileList.innerHTML = "";
+
+            if (groupedRes.ok && Object.keys(groupedData).length > 0) {
+              for (const [path, files] of Object.entries(groupedData)) {
+                const groupSection = document.createElement("div");
+                groupSection.className = "mb-4";
+
+                const groupTitle = document.createElement("p");
+                groupTitle.className = "font-bold text-gray-700 mb-1";
+                groupTitle.textContent = `📂 ${path}`;
+                groupSection.appendChild(groupTitle);
+
+                files.forEach((file) => {
+                  const fileItem = document.createElement("div");
+                  fileItem.className = "pl-4 text-gray-600";
+                  fileItem.textContent = `- ${file.name}`;
+                  groupSection.appendChild(fileItem);
+                });
+
+                fileList.appendChild(groupSection);
+              }
+            } else {
+              fileList.innerHTML =
+                "<p class='text-gray-600'>No files found yet.</p>";
+            }
+          } catch (err) {
+            groupedBox.innerHTML += `<p class='text-red-600 mt-2'>❌ Could not fetch file listings: ${err.message}</p>`;
+          }
         } else {
-          responseBox.innerHTML = `<span class="text-red-600">❌ Upload failed: ${
+          responseBox.innerHTML = `<div class="bg-red-100 text-red-800 p-3 rounded">❌ Upload failed: ${
             result.error || "Try again."
-          }</span>`;
+          }</div>`;
         }
       } catch (err) {
-        responseBox.innerHTML = `<span class="text-red-600">❌ Network error: ${err.message}</span>`;
+        responseBox.innerHTML = `<div class="bg-red-100 text-red-800 p-3 rounded">❌ Network error: ${err.message}</div>`;
       }
     });
   }, 100);
