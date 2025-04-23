@@ -33,7 +33,7 @@ function capitalize(str = "") {
 }
 
 function renderHighSchoolContent(section, category) {
-  const forms = ["Form 2", "Form 3", "Form 4"];
+  const forms = ["form2", "form3", "form4"];
   const subjects = [
     "English",
     "Kiswahili",
@@ -57,14 +57,14 @@ function renderHighSchoolContent(section, category) {
 
 function renderPrimaryContent(section, category) {
   const levels = {
-    "PP1 & PP2": [
+    pp1_pp2: [
       "Environmental Activities",
       "Language Activities",
       "Psychomotor and Creative Activities",
       "Mathematical Activities",
       "Religious Education Activities",
     ],
-    "Grade 1": [
+    grade1: [
       "Mathematical Activities",
       "Literacy",
       "English Language Activities",
@@ -74,7 +74,7 @@ function renderPrimaryContent(section, category) {
       "Environmental Activities",
       "Movement and Creative Activities",
     ],
-    "Grade 2": [
+    grade2: [
       "Mathematical Activities",
       "Literacy",
       "English Language Activities",
@@ -84,7 +84,7 @@ function renderPrimaryContent(section, category) {
       "Environmental Activities",
       "Movement and Creative Activities",
     ],
-    "Grade 3": [
+    grade3: [
       "Mathematical Activities",
       "Literacy",
       "English Language Activities",
@@ -94,7 +94,7 @@ function renderPrimaryContent(section, category) {
       "Environmental Activities",
       "Movement and Creative Activities",
     ],
-    "Grade 4": [
+    grade4: [
       "English",
       "Mathematics",
       "Agriculture",
@@ -106,7 +106,7 @@ function renderPrimaryContent(section, category) {
       "CRE",
       "Creative Arts",
     ],
-    "Grade 5": [
+    grade5: [
       "English",
       "Mathematics",
       "Agriculture",
@@ -118,7 +118,7 @@ function renderPrimaryContent(section, category) {
       "CRE",
       "Creative Arts",
     ],
-    "Grade 6": [
+    grade6: [
       "English",
       "Mathematics",
       "Agriculture",
@@ -130,7 +130,7 @@ function renderPrimaryContent(section, category) {
       "CRE",
       "Creative Arts",
     ],
-    "Grade 7": [
+    grade7: [
       "Mathematics",
       "English",
       "Kiswahili",
@@ -143,7 +143,7 @@ function renderPrimaryContent(section, category) {
       "Sports and Physical Education",
       "Business Studies",
     ],
-    "Grade 8": [
+    grade8: [
       "Mathematics",
       "English",
       "Kiswahili",
@@ -156,7 +156,7 @@ function renderPrimaryContent(section, category) {
       "Sports and Physical Education",
       "Business Studies",
     ],
-    "Grade 9": [
+    grade9: [
       "Mathematics",
       "English",
       "Kiswahili",
@@ -179,7 +179,7 @@ function renderPrimaryContent(section, category) {
 function renderSubjectGrid(section, groupTitle, subjects, level, category) {
   const title = document.createElement("h3");
   title.className = "text-xl font-semibold mb-4 mt-8";
-  title.textContent = `${groupTitle} ${capitalize(category)}`;
+  title.textContent = `${capitalize(groupTitle)} ${capitalize(category)}`;
   section.appendChild(title);
 
   const grid = document.createElement("div");
@@ -198,7 +198,7 @@ function renderSubjectGrid(section, groupTitle, subjects, level, category) {
       if (!localStorage.getItem("user")) {
         alert("Please log in to access files.");
       } else {
-        document.body.appendChild(FileModal([], subject, () => {}));
+        FileModal(subject, groupTitle.toLowerCase(), category, () => {});
       }
     });
 

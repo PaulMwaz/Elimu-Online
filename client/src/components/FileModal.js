@@ -1,6 +1,10 @@
-export async function FileModal(files = [], subject = "", onClose = () => {}) {
+export async function FileModal(
+  subject = "",
+  form = "form2", // default Form
+  category = "exams",
+  onClose = () => {}
+) {
   const isLoggedIn = !!localStorage.getItem("user");
-
   const isLocal =
     window.location.hostname === "localhost" ||
     window.location.hostname === "127.0.0.1";
@@ -8,23 +12,36 @@ export async function FileModal(files = [], subject = "", onClose = () => {}) {
     ? "http://localhost:5555"
     : "https://elimu-online.onrender.com";
 
-  // 🔄 Optional dynamic fetch from API if empty
-  if (isLoggedIn && files.length === 0 && subject) {
+  console.log("🟦 Opening FileModal...");
+  console.log("📂 Subject:", subject);
+  console.log("📚 Form:", form);
+  console.log("📁 Category:", category);
+
+  let files = [];
+
+  if (isLoggedIn && subject) {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/resources`, {
-        method: "GET",
-        credentials: "include",
-      });
-      const data = await res.json();
-      files = data.resources.filter((r) =>
-        r.title.toLowerCase().includes(subject.toLowerCase())
+      const folderPath = `${category}/highschool/${form}/${subject.toLowerCase()}`;
+      console.log("📡 Fetching files from:", folderPath);
+
+      const res = await fetch(
+        `${API_BASE_URL}/api/files/list?path=${encodeURIComponent(folderPath)}`,
+        {
+          method: "GET",
+          credentials: "include",
+        }
       );
+
+      const data = await res.json();
+      console.log("✅ Response Data:", data);
+
+      files = data.files || [];
     } catch (err) {
-      console.error("❌ Failed to load files:", err);
+      console.error("❌ Fetch failed:", err);
     }
   }
 
-  // 🔲 Create modal container
+  // Create modal overlay
   const overlay = document.createElement("div");
   overlay.className =
     "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50";
@@ -42,8 +59,8 @@ export async function FileModal(files = [], subject = "", onClose = () => {}) {
           ? files.length > 0
             ? `<ul class="space-y-3">${files
                 .map((file) => {
-                  const title = file.title || file.name;
-                  const url = file.file_url || file.url;
+                  const title = file.name || "Unnamed File";
+                  const url = file.url || "#";
                   return `
                     <li class="flex justify-between items-center border-b pb-2">
                       <span class="text-gray-800 dark:text-white truncate max-w-[60%]">${title}</span>
@@ -52,8 +69,7 @@ export async function FileModal(files = [], subject = "", onClose = () => {}) {
                 })
                 .join("")}</ul>`
             : `<p class="text-gray-600 dark:text-gray-300">No files available for this subject yet.</p>`
-          : `<p class="text-red-500">Please <a href="/login" data-link class="underline text-blue-600">Login</a> or 
-             <a href="/register" data-link class="underline text-blue-600">Register</a> to access files.</p>`
+          : `<p class="text-red-500">Please <a href="/login" data-link class="underline text-blue-600">Login</a> or <a href="/register" data-link class="underline text-blue-600">Register</a> to access files.</p>`
       }
     </div>
   `;
@@ -62,13 +78,11 @@ export async function FileModal(files = [], subject = "", onClose = () => {}) {
   document.body.appendChild(overlay);
 
   setTimeout(() => {
-    // Close button
     document.getElementById("closeModal").addEventListener("click", () => {
       overlay.remove();
       onClose();
     });
 
-    // Internal SPA routing
     document.querySelectorAll("[data-link]").forEach((link) => {
       link.addEventListener("click", (e) => {
         e.preventDefault();
@@ -81,19 +95,13 @@ export async function FileModal(files = [], subject = "", onClose = () => {}) {
   }, 50);
 }
 
-// 🔁 Global tracker function
+// ✅ View Tracker (Optional)
 window.trackRecentView = function (title, url) {
   try {
     const maxItems = 10;
     const current = JSON.parse(localStorage.getItem("recent_views")) || [];
-
-    // Remove existing if duplicate
     const updated = current.filter((item) => item.url !== url);
-
-    // Add to start
     updated.unshift({ title, url });
-
-    // Limit to max 10
     localStorage.setItem(
       "recent_views",
       JSON.stringify(updated.slice(0, maxItems))

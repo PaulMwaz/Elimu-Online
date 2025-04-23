@@ -40,14 +40,12 @@ export function AdminPanel() {
           try {
             const res = await fetch(`${API_BASE_URL}/api/login`, {
               method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
+              headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ email, password }),
             });
 
             const result = await res.json();
-            if (res.ok && result.user && result.user.is_admin) {
+            if (res.ok && result.user?.is_admin) {
               localStorage.setItem("adminToken", result.token);
               history.pushState({}, "", "/admin");
               window.dispatchEvent(new Event("popstate"));
@@ -78,13 +76,13 @@ export function AdminPanel() {
         <div>
           <label class="block text-sm font-medium mb-1">Level</label>
           <select id="levelSelect" class="w-full p-2 border rounded">
-            <option value="primary">Primary School</option>
             <option value="highschool">High School</option>
+            <option value="primary">Primary School</option>
           </select>
         </div>
 
         <div>
-          <label class="block text-sm font-medium mb-1">Class/Form</label>
+          <label class="block text-sm font-medium mb-1">Form/Class</label>
           <select id="classSelect" class="w-full p-2 border rounded">
             <option value="form2">Form 2</option>
             <option value="form3">Form 3</option>
@@ -95,8 +93,8 @@ export function AdminPanel() {
         <div>
           <label class="block text-sm font-medium mb-1">Category</label>
           <select id="categorySelect" class="w-full p-2 border rounded">
-            <option value="notes">Notes</option>
             <option value="exams">Exams</option>
+            <option value="notes">Notes</option>
             <option value="ebooks">E-Books</option>
             <option value="tutorials">Tutorials</option>
             <option value="schemes">Schemes of Work</option>
@@ -117,7 +115,6 @@ export function AdminPanel() {
         <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Upload File</button>
         <div id="uploadResponse" class="text-sm text-center mt-2"></div>
       </form>
-      <div id="groupedFiles" class="mt-10 text-sm bg-gray-100 p-4 rounded overflow-auto max-h-[300px]"></div>
     </div>
   `;
 
@@ -130,16 +127,14 @@ export function AdminPanel() {
 
     const form = document.getElementById("admin-upload-form");
     const responseBox = document.getElementById("uploadResponse");
-    const groupedBox = document.getElementById("groupedFiles");
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
-
       const file = document.getElementById("uploadInput").files[0];
       const level = document.getElementById("levelSelect").value;
       const formClass = document.getElementById("classSelect").value;
       const category = document.getElementById("categorySelect").value;
-      const subject = document.getElementById("subjectInput").value;
+      const subject = document.getElementById("subjectInput").value.trim();
 
       if (!file) {
         responseBox.innerHTML = `<div class="bg-red-100 text-red-800 p-3 rounded">❌ Please select a file.</div>`;
@@ -149,15 +144,14 @@ export function AdminPanel() {
       const formData = new FormData();
       formData.append("file", file);
       formData.append("level", level);
+      formData.append("class", formClass); // Backend expects "class"
       formData.append("category", category);
       formData.append("subject", subject);
 
       try {
         const res = await fetch(`${API_BASE_URL}/api/files/upload`, {
           method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
           body: formData,
         });
 
@@ -165,43 +159,6 @@ export function AdminPanel() {
         if (res.ok) {
           responseBox.innerHTML = `<div class="bg-green-100 text-green-800 p-3 rounded">✅ File uploaded: <a href="${result.file_url}" class="underline" target="_blank">${result.file_url}</a></div>`;
           form.reset();
-
-          // 🟢 Fetch and Display Grouped Files
-          groupedBox.innerHTML =
-            "<p class='text-blue-700 font-semibold mb-2'>📦 Uploaded Files:</p><div id='fileList'>⏳ Loading...</div>";
-
-          try {
-            const groupedRes = await fetch(`${API_BASE_URL}/api/files/grouped`);
-            const groupedData = await groupedRes.json();
-            const fileList = document.getElementById("fileList");
-            fileList.innerHTML = "";
-
-            if (groupedRes.ok && Object.keys(groupedData).length > 0) {
-              for (const [path, files] of Object.entries(groupedData)) {
-                const groupSection = document.createElement("div");
-                groupSection.className = "mb-4";
-
-                const groupTitle = document.createElement("p");
-                groupTitle.className = "font-bold text-gray-700 mb-1";
-                groupTitle.textContent = `📂 ${path}`;
-                groupSection.appendChild(groupTitle);
-
-                files.forEach((file) => {
-                  const fileItem = document.createElement("div");
-                  fileItem.className = "pl-4 text-gray-600";
-                  fileItem.textContent = `- ${file.name}`;
-                  groupSection.appendChild(fileItem);
-                });
-
-                fileList.appendChild(groupSection);
-              }
-            } else {
-              fileList.innerHTML =
-                "<p class='text-gray-600'>No files found yet.</p>";
-            }
-          } catch (err) {
-            groupedBox.innerHTML += `<p class='text-red-600 mt-2'>❌ Could not fetch file listings: ${err.message}</p>`;
-          }
         } else {
           responseBox.innerHTML = `<div class="bg-red-100 text-red-800 p-3 rounded">❌ Upload failed: ${
             result.error || "Try again."
