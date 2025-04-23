@@ -2,7 +2,8 @@ from flask import Blueprint, request, jsonify
 from google.cloud import storage
 import os
 from urllib.parse import unquote
-from ..utils.auth_utils import admin_required
+from werkzeug.utils import secure_filename
+from ..utils.auth_utils import admin_required, verify_token
 
 file_routes = Blueprint("file_routes", __name__)
 
@@ -12,6 +13,43 @@ BUCKET_NAME = os.getenv("GCS_BUCKET_NAME")
 def get_bucket():
     client = storage.Client()
     return client.bucket(BUCKET_NAME)
+
+
+# ✅ Upload file to Google Cloud Storage (Admin Only)
+@file_routes.route("/api/files/upload", methods=["POST"])
+def upload_file():
+    token = request.headers.get("Authorization", "").replace("Bearer ", "")
+    user = verify_token(token)
+    if not user or not user.get("is_admin"):
+        return jsonify({"error": "Unauthorized"}), 401
+
+    if "file" not in request.files:
+        return jsonify({"error": "No file provided"}), 400
+
+    file = request.files["file"]
+    if file.filename == "":
+        return jsonify({"error": "Empty filename"}), 400
+
+    # Get metadata from form
+    category = request.form.get("category", "").lower()  # highschool or primary
+    level = request.form.get("level", "").replace(" ", "_")  # e.g., Form_2
+    subject = request.form.get("subject", "").replace(" ", "_")  # e.g., Mathematics
+
+    if not all([category, level, subject]):
+        return jsonify({"error": "Missing metadata"}), 400
+
+    filename = secure_filename(file.filename)
+    blob_path = f"{category}/{level}/{subject}/{filename}"
+
+    # Upload to GCS
+    bucket = get_bucket()
+    blob = bucket.blob(blob_path)
+    blob.upload_from_file(file, content_type=file.content_type)
+
+    file_url = f"https://storage.googleapis.com/{BUCKET_NAME}/{blob_path}"
+
+    return jsonify({"message": "✅ File uploaded successfully", "file_url": file_url}), 201
+
 
 # ✅ List files by category (e.g., primary/ or highschool/)
 @file_routes.route("/api/files/<category>", methods=["GET"])
@@ -29,6 +67,7 @@ def list_files(category):
 
     return jsonify(files), 200
 
+
 # ✅ Delete a file by filename
 @file_routes.route("/api/files/<category>/<filename>", methods=["DELETE"])
 def delete_file(category, filename):
@@ -43,6 +82,7 @@ def delete_file(category, filename):
 
     blob.delete()
     return jsonify({"message": "✅ File deleted successfully"}), 200
+
 
 # ✅ Rename a file in the bucket
 @file_routes.route("/api/files/<category>/<filename>", methods=["PATCH"])

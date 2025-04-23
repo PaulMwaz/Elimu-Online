@@ -73,14 +73,7 @@ function handleRouting() {
       break;
 
     case "/login":
-      app.appendChild(
-        Login({
-          onSuccess: () => {
-            history.pushState({}, "", "/resources");
-            window.dispatchEvent(new Event("popstate"));
-          },
-        })
-      );
+      app.appendChild(Login());
       break;
 
     case "/register":

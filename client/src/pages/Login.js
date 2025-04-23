@@ -53,26 +53,19 @@ export function Login() {
           const res = await fetch(`${API_BASE_URL}/api/login`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            credentials: "include",
             body: JSON.stringify({ email, password }),
           });
 
           const result = await res.json();
 
-          if (res.ok) {
-            // ✅ Fix: Handle flat response structure
-            const userObject = {
-              full_name: result.full_name || "User",
-              email: result.email || email,
-              is_admin: result.is_admin || false,
-            };
-
-            localStorage.setItem("user", JSON.stringify(userObject));
+          if (res.ok && result.token) {
+            // ✅ Updated to handle the correct response structure: { user, token }
+            localStorage.setItem("user", JSON.stringify(result.user));
             localStorage.setItem("token", result.token);
 
             sessionStorage.setItem("showToast", "1");
 
-            msgBox.innerHTML = `<span class='text-green-600'>✅ Welcome, ${userObject.full_name}!</span>`;
+            msgBox.innerHTML = `<span class='text-green-600'>✅ Welcome, ${result.user.full_name}!</span>`;
             history.pushState({}, "", "/resources");
             window.dispatchEvent(new Event("popstate"));
           } else {
@@ -88,20 +81,12 @@ export function Login() {
 
     const logoutBtn = document.getElementById("logoutBtn");
     if (logoutBtn) {
-      logoutBtn.addEventListener("click", async () => {
-        try {
-          await fetch(`${API_BASE_URL}/api/logout`, {
-            method: "POST",
-            credentials: "include",
-          });
-          localStorage.removeItem("user");
-          localStorage.removeItem("token");
+      logoutBtn.addEventListener("click", () => {
+        localStorage.removeItem("user");
+        localStorage.removeItem("token");
 
-          history.pushState({}, "", "/login");
-          window.dispatchEvent(new Event("popstate"));
-        } catch (err) {
-          console.error("Logout failed:", err.message);
-        }
+        history.pushState({}, "", "/login");
+        window.dispatchEvent(new Event("popstate"));
       });
     }
   }, 100);
