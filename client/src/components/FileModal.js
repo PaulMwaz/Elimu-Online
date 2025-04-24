@@ -1,4 +1,4 @@
-// ✅ Updated FileModal.js with uniform "Ksh 30" buttons and responsive layout
+// ✅ Updated FileModal.js with uniform buttons and responsive layout
 export async function FileModal(
   subject = "",
   form = "form2",
@@ -63,11 +63,17 @@ export async function FileModal(
                     }</span>
                   </div>
                   <div class="flex flex-row flex-wrap justify-end items-center gap-2 w-full sm:w-auto">
-                    <button class="px-4 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700">View</button>
+                    <button class="w-24 py-1.5 text-sm bg-blue-600 text-white rounded text-center hover:bg-blue-700">
+                      View
+                    </button>
                     ${
                       isFree
-                        ? `<a href="${url}" target="_blank" class="px-4 py-1.5 text-sm bg-green-600 text-white rounded hover:bg-green-700">Download</a>`
-                        : `<button class="px-4 py-1.5 text-sm bg-yellow-500 text-white rounded hover:bg-yellow-600">Ksh ${price}</button>`
+                        ? `<a href="${url}" target="_blank" class="w-24 py-1.5 text-sm bg-green-600 text-white rounded text-center hover:bg-green-700">
+                             Download
+                           </a>`
+                        : `<button class="w-24 py-1.5 text-sm bg-yellow-500 text-white rounded text-center hover:bg-yellow-600">
+                             Ksh ${price}
+                           </button>`
                     }
                   </div>
                 </li>`;

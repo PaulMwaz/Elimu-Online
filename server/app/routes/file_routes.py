@@ -48,16 +48,12 @@ def upload_file():
         return jsonify({"error": "Missing metadata"}), 400
 
     filename = secure_filename(file.filename)
-    
-    # ✅ Corrected path structure to match frontend
     blob_path = f"{category}/{level}/{form_class}/{subject}/{term}/{filename}"
 
     try:
         bucket = get_bucket()
         blob = bucket.blob(blob_path)
         blob.upload_from_file(file, content_type=file.content_type)
-
-        # Store price metadata
         blob.metadata = {"price": str(price)}
         blob.patch()
 
@@ -113,7 +109,7 @@ def list_grouped_files():
                 continue
 
             path_parts = blob.name.split("/")
-            key = "/".join(path_parts[:-1])  # group by folder path
+            key = "/".join(path_parts[:-1])
             grouped.setdefault(key, []).append({
                 "name": os.path.basename(blob.name),
                 "url": f"https://storage.googleapis.com/{BUCKET_NAME}/{blob.name}",
@@ -123,3 +119,54 @@ def list_grouped_files():
         return jsonify(grouped), 200
     except Exception as e:
         return jsonify({"error": "Failed to group files", "details": str(e)}), 500
+
+# ✅ Delete file from Google Cloud Storage
+@file_routes.route("/api/files/delete", methods=["DELETE"])
+def delete_file():
+    token = request.headers.get("Authorization", "").replace("Bearer ", "")
+    user = verify_token(token)
+    if not user or not user.get("is_admin"):
+        return jsonify({"error": "Admin access required"}), 403
+
+    data = request.get_json()
+    path = data.get("path")
+    name = data.get("name")
+    if not path or not name:
+        return jsonify({"error": "Missing path or name"}), 400
+
+    blob_path = f"{path}/{name}"
+    try:
+        bucket = get_bucket()
+        blob = bucket.blob(blob_path)
+        blob.delete()
+        return jsonify({"message": "✅ File deleted successfully."}), 200
+    except Exception as e:
+        return jsonify({"error": "Failed to delete file", "details": str(e)}), 500
+
+# ✅ Rename file within GCS
+@file_routes.route("/api/files/rename", methods=["POST"])
+def rename_file():
+    token = request.headers.get("Authorization", "").replace("Bearer ", "")
+    user = verify_token(token)
+    if not user or not user.get("is_admin"):
+        return jsonify({"error": "Admin access required"}), 403
+
+    data = request.get_json()
+    path = data.get("path")
+    old_name = data.get("old_name")
+    new_name = data.get("new_name")
+
+    if not path or not old_name or not new_name:
+        return jsonify({"error": "Missing required fields"}), 400
+
+    try:
+        bucket = get_bucket()
+        old_blob = bucket.blob(f"{path}/{old_name}")
+        new_blob = bucket.blob(f"{path}/{new_name}")
+
+        new_blob.rewrite(old_blob)
+        old_blob.delete()
+
+        return jsonify({"message": "✅ File renamed successfully."}), 200
+    except Exception as e:
+        return jsonify({"error": "Rename failed", "details": str(e)}), 500
