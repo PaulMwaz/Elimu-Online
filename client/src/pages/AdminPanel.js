@@ -1,3 +1,4 @@
+// ✅ Full Updated AdminPanel.js with Term & Price fields
 export function AdminPanel() {
   const section = document.createElement("section");
   section.className = "container py-16 px-4";
@@ -40,12 +41,14 @@ export function AdminPanel() {
           try {
             const res = await fetch(`${API_BASE_URL}/api/login`, {
               method: "POST",
-              headers: { "Content-Type": "application/json" },
+              headers: {
+                "Content-Type": "application/json",
+              },
               body: JSON.stringify({ email, password }),
             });
 
             const result = await res.json();
-            if (res.ok && result.user?.is_admin) {
+            if (res.ok && result.user && result.user.is_admin) {
               localStorage.setItem("adminToken", result.token);
               history.pushState({}, "", "/admin");
               window.dispatchEvent(new Event("popstate"));
@@ -65,6 +68,7 @@ export function AdminPanel() {
     return section;
   }
 
+  // ✅ Admin Upload Form UI
   section.innerHTML = `
     <div class="max-w-2xl mx-auto">
       <div class="flex justify-between items-center mb-6">
@@ -108,6 +112,20 @@ export function AdminPanel() {
         </div>
 
         <div>
+          <label class="block text-sm font-medium mb-1">Term</label>
+          <select id="termSelect" class="w-full p-2 border rounded">
+            <option value="term1">Term 1</option>
+            <option value="term2">Term 2</option>
+            <option value="term3">Term 3</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium mb-1">Price (Ksh)</label>
+          <input type="number" id="priceInput" class="w-full p-2 border rounded" value="0" min="0" step="1" />
+        </div>
+
+        <div>
           <label class="block text-sm font-medium mb-1">Select File</label>
           <input type="file" id="uploadInput" class="w-full p-2 border rounded" required />
         </div>
@@ -135,6 +153,10 @@ export function AdminPanel() {
       const formClass = document.getElementById("classSelect").value;
       const category = document.getElementById("categorySelect").value;
       const subject = document.getElementById("subjectInput").value.trim();
+      const term = document.getElementById("termSelect").value;
+      const price = parseFloat(
+        document.getElementById("priceInput").value || "0"
+      ).toFixed(2);
 
       if (!file) {
         responseBox.innerHTML = `<div class="bg-red-100 text-red-800 p-3 rounded">❌ Please select a file.</div>`;
@@ -144,14 +166,18 @@ export function AdminPanel() {
       const formData = new FormData();
       formData.append("file", file);
       formData.append("level", level);
-      formData.append("class", formClass); // Backend expects "class"
+      formData.append("class", formClass);
       formData.append("category", category);
       formData.append("subject", subject);
+      formData.append("term", term);
+      formData.append("price", price);
 
       try {
         const res = await fetch(`${API_BASE_URL}/api/files/upload`, {
           method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
           body: formData,
         });
 

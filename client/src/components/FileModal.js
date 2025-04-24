@@ -1,7 +1,9 @@
+// ✅ Updated FileModal.js with uniform "Ksh 30" buttons and responsive layout
 export async function FileModal(
   subject = "",
-  form = "form2", // default Form
+  form = "form2",
   category = "exams",
+  term = "term1",
   onClose = () => {}
 ) {
   const isLoggedIn = !!localStorage.getItem("user");
@@ -12,64 +14,66 @@ export async function FileModal(
     ? "http://localhost:5555"
     : "https://elimu-online.onrender.com";
 
-  console.log("🟦 Opening FileModal...");
-  console.log("📂 Subject:", subject);
-  console.log("📚 Form:", form);
-  console.log("📁 Category:", category);
-
   let files = [];
+  let loading = true;
 
   if (isLoggedIn && subject) {
     try {
-      const folderPath = `${category}/highschool/${form}/${subject.toLowerCase()}`;
-      console.log("📡 Fetching files from:", folderPath);
-
+      const folderPath = `${category}/highschool/${form}/${subject.toLowerCase()}/${term}`;
       const res = await fetch(
-        `${API_BASE_URL}/api/files/list?path=${encodeURIComponent(folderPath)}`,
-        {
-          method: "GET",
-          credentials: "include",
-        }
+        `${API_BASE_URL}/api/files/list?path=${encodeURIComponent(folderPath)}`
       );
-
       const data = await res.json();
-      console.log("✅ Response Data:", data);
-
       files = data.files || [];
     } catch (err) {
-      console.error("❌ Fetch failed:", err);
+      console.error("❌ Failed to fetch files:", err);
+    } finally {
+      loading = false;
     }
   }
 
-  // Create modal overlay
   const overlay = document.createElement("div");
   overlay.className =
     "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50";
 
   const modal = document.createElement("div");
   modal.className =
-    "bg-white dark:bg-gray-800 max-w-xl w-full rounded-lg shadow-lg p-6 relative overflow-y-auto max-h-[90vh]";
+    "bg-white dark:bg-gray-800 max-w-2xl w-full rounded-lg shadow-lg p-6 relative overflow-y-auto max-h-[90vh]";
 
   modal.innerHTML = `
     <h3 class="text-xl font-bold mb-4 text-blue-700">${subject} Files</h3>
     <button class="absolute top-2 right-3 text-xl text-gray-500 hover:text-red-600" id="closeModal">&times;</button>
-    <div>
+    <div id="fileListContent">
       ${
-        isLoggedIn
-          ? files.length > 0
-            ? `<ul class="space-y-3">${files
-                .map((file) => {
-                  const title = file.name || "Unnamed File";
-                  const url = file.url || "#";
-                  return `
-                    <li class="flex justify-between items-center border-b pb-2">
-                      <span class="text-gray-800 dark:text-white truncate max-w-[60%]">${title}</span>
-                      <a href="${url}" target="_blank" class="text-blue-600 hover:underline font-medium" onclick="trackRecentView('${title}', '${url}')">Download</a>
-                    </li>`;
-                })
-                .join("")}</ul>`
-            : `<p class="text-gray-600 dark:text-gray-300">No files available for this subject yet.</p>`
-          : `<p class="text-red-500">Please <a href="/login" data-link class="underline text-blue-600">Login</a> or <a href="/register" data-link class="underline text-blue-600">Register</a> to access files.</p>`
+        loading
+          ? '<p class="text-gray-600 dark:text-gray-300">Loading files...</p>'
+          : files.length > 0
+          ? `<ul class="space-y-4">${files
+              .map((file) => {
+                const title = file.name;
+                const url = file.url;
+                const price = parseFloat(file.price || 0);
+                const isFree = price <= 0;
+                return `
+                <li class="p-4 border rounded flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                  <div class="w-full sm:w-3/4">
+                    <span class="block font-medium text-gray-800 dark:text-white">${title}</span>
+                    <span class="text-xs text-gray-500">${
+                      isFree ? "Free" : `Ksh ${price}`
+                    }</span>
+                  </div>
+                  <div class="flex flex-row flex-wrap justify-end items-center gap-2 w-full sm:w-auto">
+                    <button class="px-4 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700">View</button>
+                    ${
+                      isFree
+                        ? `<a href="${url}" target="_blank" class="px-4 py-1.5 text-sm bg-green-600 text-white rounded hover:bg-green-700">Download</a>`
+                        : `<button class="px-4 py-1.5 text-sm bg-yellow-500 text-white rounded hover:bg-yellow-600">Ksh ${price}</button>`
+                    }
+                  </div>
+                </li>`;
+              })
+              .join("")}</ul>`
+          : `<p class="text-gray-600 dark:text-gray-300">No files available for this subject yet.</p>`
       }
     </div>
   `;
@@ -95,7 +99,7 @@ export async function FileModal(
   }, 50);
 }
 
-// ✅ View Tracker (Optional)
+// ✅ Optional: Track recently viewed files
 window.trackRecentView = function (title, url) {
   try {
     const maxItems = 10;

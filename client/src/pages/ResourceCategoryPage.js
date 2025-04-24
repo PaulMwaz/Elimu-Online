@@ -1,3 +1,4 @@
+// ✅ Fixed ResourceCategoryPage.js with FileModal async call handled
 import { FileModal } from "../components/FileModal.js";
 
 export function ResourceCategoryPage(level = "", category = "") {
@@ -33,7 +34,8 @@ function capitalize(str = "") {
 }
 
 function renderHighSchoolContent(section, category) {
-  const forms = ["form2", "form3", "form4"];
+  const forms = ["Form 2", "Form 3", "Form 4"];
+  const terms = ["Term 1", "Term 2", "Term 3"];
   const subjects = [
     "English",
     "Kiswahili",
@@ -51,135 +53,36 @@ function renderHighSchoolContent(section, category) {
   ];
 
   forms.forEach((form) => {
-    renderSubjectGrid(section, form, subjects, "highschool", category);
+    terms.forEach((term) => {
+      renderSubjectGrid(section, form, term, subjects, "highschool", category);
+    });
   });
 }
 
 function renderPrimaryContent(section, category) {
   const levels = {
-    pp1_pp2: [
-      "Environmental Activities",
-      "Language Activities",
-      "Psychomotor and Creative Activities",
-      "Mathematical Activities",
-      "Religious Education Activities",
-    ],
-    grade1: [
-      "Mathematical Activities",
-      "Literacy",
-      "English Language Activities",
-      "Hygiene and Nutrition Activities",
-      "ICT",
-      "Religious Education Activities",
-      "Environmental Activities",
-      "Movement and Creative Activities",
-    ],
-    grade2: [
-      "Mathematical Activities",
-      "Literacy",
-      "English Language Activities",
-      "Hygiene and Nutrition Activities",
-      "ICT",
-      "Religious Education Activities",
-      "Environmental Activities",
-      "Movement and Creative Activities",
-    ],
-    grade3: [
-      "Mathematical Activities",
-      "Literacy",
-      "English Language Activities",
-      "Hygiene and Nutrition Activities",
-      "ICT",
-      "Religious Education Activities",
-      "Environmental Activities",
-      "Movement and Creative Activities",
-    ],
-    grade4: [
-      "English",
-      "Mathematics",
-      "Agriculture",
-      "Social Studies",
-      "Kiswahili",
-      "Home Science",
-      "Science and Technology",
-      "Physical and Health Education",
-      "CRE",
-      "Creative Arts",
-    ],
-    grade5: [
-      "English",
-      "Mathematics",
-      "Agriculture",
-      "Social Studies",
-      "Kiswahili",
-      "Home Science",
-      "Science and Technology",
-      "Physical and Health Education",
-      "CRE",
-      "Creative Arts",
-    ],
-    grade6: [
-      "English",
-      "Mathematics",
-      "Agriculture",
-      "Social Studies",
-      "Kiswahili",
-      "Home Science",
-      "Science and Technology",
-      "Physical and Health Education",
-      "CRE",
-      "Creative Arts",
-    ],
-    grade7: [
-      "Mathematics",
-      "English",
-      "Kiswahili",
-      "Integrated Science",
-      "Social Studies",
-      "Agriculture",
-      "CRE",
-      "Health Education",
-      "Life Skills Education",
-      "Sports and Physical Education",
-      "Business Studies",
-    ],
-    grade8: [
-      "Mathematics",
-      "English",
-      "Kiswahili",
-      "Integrated Science",
-      "Social Studies",
-      "Agriculture",
-      "CRE",
-      "Health Education",
-      "Life Skills Education",
-      "Sports and Physical Education",
-      "Business Studies",
-    ],
-    grade9: [
-      "Mathematics",
-      "English",
-      "Kiswahili",
-      "Integrated Science",
-      "Social Studies",
-      "Agriculture",
-      "CRE",
-      "Health Education",
-      "Life Skills Education",
-      "Sports and Physical Education",
-      "Business Studies",
-    ],
+    "Grade 1": ["Mathematics", "English", "Kiswahili", "Science", "CRE"],
+    "Grade 2": ["Mathematics", "English", "Kiswahili", "Science", "CRE"],
+    "Grade 3": ["Mathematics", "English", "Kiswahili", "Science", "CRE"],
+    "Grade 4": ["Mathematics", "English", "Kiswahili", "Science", "CRE"],
+    "Grade 5": ["Mathematics", "English", "Kiswahili", "Science", "CRE"],
+    "Grade 6": ["Mathematics", "English", "Kiswahili", "Science", "CRE"],
+    "Grade 7": ["Mathematics", "English", "Kiswahili", "Science", "CRE"],
+    "Grade 8": ["Mathematics", "English", "Kiswahili", "Science", "CRE"],
+    "Grade 9": ["Mathematics", "English", "Kiswahili", "Science", "CRE"],
   };
 
   Object.entries(levels).forEach(([grade, subjects]) => {
-    renderSubjectGrid(section, grade, subjects, "primary", category);
+    ["Term 1", "Term 2", "Term 3"].forEach((term) => {
+      renderSubjectGrid(section, grade, term, subjects, "primary", category);
+    });
   });
 }
 
-function renderSubjectGrid(section, groupTitle, subjects, level, category) {
+function renderSubjectGrid(section, form, term, subjects, level, category) {
   const title = document.createElement("h3");
   title.className = "text-xl font-semibold mb-4 mt-8";
-  title.textContent = `${capitalize(groupTitle)} ${capitalize(category)}`;
+  title.textContent = `${form} ${capitalize(category)} - ${term}`;
   section.appendChild(title);
 
   const grid = document.createElement("div");
@@ -198,7 +101,14 @@ function renderSubjectGrid(section, groupTitle, subjects, level, category) {
       if (!localStorage.getItem("user")) {
         alert("Please log in to access files.");
       } else {
-        FileModal(subject, groupTitle.toLowerCase(), category, () => {});
+        // ✅ Correct async call without appendChild
+        FileModal(
+          subject,
+          form.toLowerCase().replace(" ", ""),
+          category,
+          term.toLowerCase().replace(/\s+/g, ""),
+          () => {}
+        );
       }
     });
 
