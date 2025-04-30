@@ -1,9 +1,15 @@
-// ✅ Fixed ResourceCategoryPage.js with FileModal async call handled
-import { FileModal } from "../components/FileModal.js";
+import { UploadForm } from "../components/UploadForm.js";
+import { FileCard } from "../components/FileCard.js";
 
 export function ResourceCategoryPage(level = "", category = "") {
   const section = document.createElement("section");
-  section.className = "container py-12 px-4 mx-auto";
+  section.className = "max-w-6xl mx-auto px-4 py-10";
+
+  const params = new URLSearchParams(window.location.search);
+  if (!level || !category) {
+    level = params.get("level") || "primary";
+    category = params.get("category") || "notes";
+  }
 
   if (!level || !category) {
     section.innerHTML = `
@@ -20,10 +26,28 @@ export function ResourceCategoryPage(level = "", category = "") {
   heading.textContent = title;
   section.appendChild(heading);
 
+  const isAdmin = !!localStorage.getItem("adminToken");
+
   if (level === "highschool") {
-    renderHighSchoolContent(section, category);
+    renderGenericTermSections(section, category, isAdmin, [
+      "Form 2",
+      "Form 3",
+      "Form 4",
+    ]);
   } else if (level === "primary") {
-    renderPrimaryContent(section, category);
+    renderGenericTermSections(section, category, isAdmin, [
+      "PP1",
+      "PP2",
+      "Grade 1",
+      "Grade 2",
+      "Grade 3",
+      "Grade 4",
+      "Grade 5",
+      "Grade 6",
+      "Grade 7",
+      "Grade 8",
+      "Grade 9",
+    ]);
   }
 
   return section;
@@ -33,89 +57,102 @@ function capitalize(str = "") {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-function renderHighSchoolContent(section, category) {
-  const forms = ["Form 2", "Form 3", "Form 4"];
+function renderGenericTermSections(section, category, isAdmin, levels) {
+  const hasTerms = !["notes", "ebooks"].includes(category); // Notes and E-Books skip terms
   const terms = ["Term 1", "Term 2", "Term 3"];
-  const subjects = [
-    "English",
-    "Kiswahili",
-    "Mathematics",
-    "Chemistry",
-    "Biology",
-    "Physics",
-    "History",
-    "Geography",
-    "CRE",
-    "Computer Studies",
-    "Home Science",
-    "Agriculture",
-    "Business Studies",
-  ];
 
-  forms.forEach((form) => {
-    terms.forEach((term) => {
-      renderSubjectGrid(section, form, term, subjects, "highschool", category);
-    });
+  levels.forEach((grade) => {
+    if (hasTerms) {
+      terms.forEach((term) => {
+        renderTermBlock(section, grade, term, category, isAdmin);
+      });
+    } else {
+      renderTermBlock(section, grade, "", category, isAdmin);
+    }
   });
 }
 
-function renderPrimaryContent(section, category) {
-  const levels = {
-    "Grade 1": ["Mathematics", "English", "Kiswahili", "Science", "CRE"],
-    "Grade 2": ["Mathematics", "English", "Kiswahili", "Science", "CRE"],
-    "Grade 3": ["Mathematics", "English", "Kiswahili", "Science", "CRE"],
-    "Grade 4": ["Mathematics", "English", "Kiswahili", "Science", "CRE"],
-    "Grade 5": ["Mathematics", "English", "Kiswahili", "Science", "CRE"],
-    "Grade 6": ["Mathematics", "English", "Kiswahili", "Science", "CRE"],
-    "Grade 7": ["Mathematics", "English", "Kiswahili", "Science", "CRE"],
-    "Grade 8": ["Mathematics", "English", "Kiswahili", "Science", "CRE"],
-    "Grade 9": ["Mathematics", "English", "Kiswahili", "Science", "CRE"],
-  };
+function renderTermBlock(section, grade, term = "", category, isAdmin) {
+  const level = grade.includes("Form") ? "highschool" : "primary";
+  const sectionWrapper = document.createElement("div");
+  sectionWrapper.className = "mb-10";
 
-  Object.entries(levels).forEach(([grade, subjects]) => {
-    ["Term 1", "Term 2", "Term 3"].forEach((term) => {
-      renderSubjectGrid(section, grade, term, subjects, "primary", category);
+  const termTitle = document.createElement("h3");
+  termTitle.className = "text-2xl font-bold mb-4 text-blue-700";
+  termTitle.textContent = `${grade} ${capitalize(category)}${
+    term ? ` - ${term}` : ""
+  }`;
+  sectionWrapper.appendChild(termTitle);
+
+  const filesContainer = document.createElement("div");
+  filesContainer.className =
+    "flex flex-col space-y-4 bg-white rounded-lg shadow-md p-4";
+
+  if (isAdmin) {
+    const uploadFormWrapper = document.createElement("div");
+    uploadFormWrapper.className = "mb-4";
+
+    const uploadButton = document.createElement("button");
+    uploadButton.className =
+      "bg-green-600 text-white px-4 py-2 rounded text-sm hover:bg-green-700";
+    uploadButton.textContent = "Upload New File";
+
+    uploadButton.addEventListener("click", () => {
+      const uploadForm = UploadForm(
+        "General",
+        grade,
+        term,
+        category,
+        level,
+        () =>
+          refreshFiles("General", grade, term, level, category, fileListWrapper)
+      );
+      uploadFormWrapper.innerHTML = ""; // remove existing form if any
+      uploadFormWrapper.appendChild(uploadForm);
     });
-  });
+
+    filesContainer.appendChild(uploadButton);
+    filesContainer.appendChild(uploadFormWrapper);
+  }
+
+  const fileListWrapper = document.createElement("div");
+  fileListWrapper.className = "flex flex-col gap-2";
+  filesContainer.appendChild(fileListWrapper);
+
+  sectionWrapper.appendChild(filesContainer);
+  section.appendChild(sectionWrapper);
+
+  refreshFiles("General", grade, term, level, category, fileListWrapper);
 }
 
-function renderSubjectGrid(section, form, term, subjects, level, category) {
-  const title = document.createElement("h3");
-  title.className = "text-xl font-semibold mb-4 mt-8";
-  title.textContent = `${form} ${capitalize(category)} - ${term}`;
-  section.appendChild(title);
+async function refreshFiles(subject, form, term, level, category, container) {
+  container.innerHTML = "Loading files...";
 
-  const grid = document.createElement("div");
-  grid.className = "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6";
+  const isLocal =
+    location.hostname === "localhost" || location.hostname === "127.0.0.1";
+  const API_BASE_URL = isLocal
+    ? "http://localhost:5555"
+    : "https://elimu-online.onrender.com";
 
-  subjects.forEach((subject) => {
-    const card = document.createElement("div");
-    card.className = "bg-white p-4 rounded shadow hover:shadow-md transition";
+  try {
+    const res = await fetch(
+      `${API_BASE_URL}/api/resources?subject=${subject}&formClass=${form}&level=${level}&term=${term}&category=${category}`
+    );
+    const data = await res.json();
+    const files = data.resources || [];
 
-    const viewBtn = document.createElement("a");
-    viewBtn.href = "#";
-    viewBtn.className = "text-blue-600 hover:underline mt-2 block";
-    viewBtn.textContent = "View Files";
-    viewBtn.addEventListener("click", (e) => {
-      e.preventDefault();
-      if (!localStorage.getItem("user")) {
-        alert("Please log in to access files.");
-      } else {
-        // ✅ Correct async call without appendChild
-        FileModal(
-          subject,
-          form.toLowerCase().replace(" ", ""),
-          category,
-          term.toLowerCase().replace(/\s+/g, ""),
-          () => {}
-        );
-      }
-    });
+    container.innerHTML = "";
 
-    card.innerHTML = `<h4 class="font-semibold text-lg mb-2">${subject}</h4>`;
-    card.appendChild(viewBtn);
-    grid.appendChild(card);
-  });
-
-  section.appendChild(grid);
+    if (files.length > 0) {
+      files.forEach((file) => {
+        const fileCard = FileCard(file); // Handles admin vs user buttons internally
+        container.appendChild(fileCard);
+      });
+    } else {
+      container.innerHTML = `<div class="text-gray-400">No files uploaded yet.</div>`;
+    }
+  } catch (err) {
+    console.error("Failed to fetch files:", err);
+    container.innerHTML = `<div class="text-red-500">❌ Error loading files.</div>`;
+  }
 }

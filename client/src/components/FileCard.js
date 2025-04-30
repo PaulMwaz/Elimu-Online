@@ -1,55 +1,122 @@
-// components/FileCard.js
-export function FileCard(file, onView, onDownload, onPay) {
+// 📁 src/components/FileCard.js
+
+export function FileCard(file) {
   const card = document.createElement("div");
   card.className =
-    "bg-white rounded-lg shadow-md overflow-hidden flex flex-col justify-between border hover:shadow-lg transition p-4";
+    "flex flex-col md:flex-row md:items-center justify-between p-3 bg-gray-100 rounded-lg shadow-sm hover:shadow-md transition";
 
-  const fileName = file.name || "Untitled";
-  const filePages = file.pages || "13";
-  const fileTerm = file.term?.toUpperCase() || "TERM1";
-  const isPaid = parseFloat(file.price) > 0;
-  const filePrice = isPaid ? `Ksh ${file.price}` : "Free";
-
-  card.innerHTML = `
-    <div class="flex items-center gap-3 mb-3">
-      <img src="/assets/pdf-icon.png" alt="PDF" class="w-8 h-8" />
-      <div>
-        <h4 class="font-semibold text-base text-gray-800 truncate">${fileName}</h4>
-        <p class="text-sm text-gray-500">${filePages} pages • PDF</p>
-      </div>
-    </div>
-
-    <div class="text-sm text-gray-600 mt-2">
-      Term: <strong class="text-gray-800">${fileTerm}</strong><br/>
-      Price: <strong class="${
-        isPaid ? "text-yellow-600" : "text-blue-700"
-      }">${filePrice}</strong>
-    </div>
-
-    <div class="flex justify-between items-center gap-2 mt-4">
-      <button class="bg-gray-200 hover:bg-gray-300 px-3 py-1 text-sm rounded" id="view-${fileName}">View</button>
-      <button class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 text-sm rounded" id="download-${fileName}">Download</button>
-      ${
-        isPaid
-          ? `<button class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 text-sm rounded" id="pay-${fileName}">Pay Ksh ${file.price}</button>`
-          : ""
-      }
-    </div>
+  const fileInfo = document.createElement("div");
+  fileInfo.className = "mb-2 md:mb-0";
+  fileInfo.innerHTML = `
+    <a href="${file.file_url}" target="_blank" class="font-semibold text-blue-600 hover:underline truncate max-w-xs block">
+      ${file.filename}
+    </a>
   `;
 
-  setTimeout(() => {
-    document
-      .getElementById(`view-${fileName}`)
-      ?.addEventListener("click", () => onView(file));
-    document
-      .getElementById(`download-${fileName}`)
-      ?.addEventListener("click", () => onDownload(file));
-    if (isPaid) {
-      document
-        .getElementById(`pay-${fileName}`)
-        ?.addEventListener("click", () => onPay(file));
-    }
-  }, 10);
+  const actions = document.createElement("div");
+  actions.className = "flex gap-2 flex-wrap justify-end";
 
+  const viewBtn = document.createElement("a");
+  viewBtn.href = file.file_url;
+  viewBtn.target = "_blank";
+  viewBtn.className =
+    "px-3 py-1 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 text-sm";
+  viewBtn.textContent = "View";
+
+  const downloadBtn = document.createElement("a");
+  downloadBtn.href = file.file_url;
+  downloadBtn.download = file.filename;
+  downloadBtn.className =
+    "px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm";
+  downloadBtn.textContent = "Download";
+
+  actions.append(viewBtn, downloadBtn);
+
+  // 🔥 If Admin: show Rename and Delete buttons too
+  const isAdmin = !!localStorage.getItem("adminToken");
+
+  if (isAdmin) {
+    const renameBtn = document.createElement("button");
+    renameBtn.className =
+      "px-3 py-1 bg-yellow-400 text-white rounded hover:bg-yellow-500 text-sm";
+    renameBtn.textContent = "Rename";
+
+    renameBtn.addEventListener("click", async () => {
+      const newName = prompt("✏️ Enter new file name:", file.filename);
+      if (!newName || newName === file.filename) return;
+
+      const token = localStorage.getItem("adminToken");
+      const isLocal =
+        location.hostname === "localhost" || location.hostname === "127.0.0.1";
+      const API_BASE_URL = isLocal
+        ? "http://localhost:5555"
+        : "https://elimu-online.onrender.com";
+
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/admin/rename`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ id: file.id, newName }),
+        });
+
+        if (res.ok) {
+          alert("✅ File renamed successfully!");
+          window.location.reload();
+        } else {
+          const err = await res.json();
+          alert(`❌ Rename failed: ${err.error || "Unknown error"}`);
+        }
+      } catch (err) {
+        console.error(err);
+        alert("❌ Server error during rename.");
+      }
+    });
+
+    const deleteBtn = document.createElement("button");
+    deleteBtn.className =
+      "px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm";
+    deleteBtn.textContent = "Delete";
+
+    deleteBtn.addEventListener("click", async () => {
+      const confirmDelete = confirm(
+        `⚠️ Are you sure you want to delete "${file.filename}"?`
+      );
+      if (!confirmDelete) return;
+
+      const token = localStorage.getItem("adminToken");
+      const isLocal =
+        location.hostname === "localhost" || location.hostname === "127.0.0.1";
+      const API_BASE_URL = isLocal
+        ? "http://localhost:5555"
+        : "https://elimu-online.onrender.com";
+
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/admin/delete/${file.id}`, {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (res.ok) {
+          alert("✅ File deleted successfully!");
+          window.location.reload();
+        } else {
+          const err = await res.json();
+          alert(`❌ Delete failed: ${err.error || "Unknown error"}`);
+        }
+      } catch (err) {
+        console.error(err);
+        alert("❌ Server error during delete.");
+      }
+    });
+
+    actions.append(renameBtn, deleteBtn);
+  }
+
+  card.append(fileInfo, actions);
   return card;
 }

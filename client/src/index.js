@@ -1,4 +1,3 @@
-// 📁 src/index.js
 import { Navbar } from "./components/Navbar.js";
 import { Footer } from "./components/Footer.js";
 import { Sidebar } from "./components/Sidebar.js";
@@ -7,7 +6,6 @@ import { About } from "./pages/About.js";
 import { Login } from "./pages/Login.js";
 import { Register } from "./pages/Register.js";
 import { Dashboard } from "./pages/Dashboard.js";
-import { AdminPanel } from "./pages/AdminPanel.js";
 import { LevelDetailPage } from "./pages/LevelDetailPage.js";
 import { ResourceCategoryPage } from "./pages/ResourceCategoryPage.js";
 import { GuestResourcePage } from "./pages/GuestResourcePage.js";
@@ -38,9 +36,8 @@ function handleRouting() {
   const app = document.getElementById("app");
   const path = window.location.pathname;
   const user = JSON.parse(localStorage.getItem("user"));
-  const loggedIn = !!user;
-  const isAdmin = loggedIn && user.is_admin;
-  const isAdminRoute = path === "/admin";
+  const loggedIn = !!user || !!localStorage.getItem("adminToken"); // ✅ Support admin login
+  const appIsAdmin = !!localStorage.getItem("adminToken");
 
   app.innerHTML = "";
 
@@ -49,17 +46,15 @@ function handleRouting() {
   document.querySelector("aside")?.remove();
   document.querySelector("footer")?.remove();
 
-  // ✅ Show Sidebar only if not on Admin page
-  if (loggedIn && !isAdminRoute) {
+  // ✅ Show Sidebar if logged in
+  if (loggedIn) {
     const sidebar = Sidebar();
     document.body.insertBefore(sidebar, app);
   }
 
-  // ✅ Show Navbar only if not on Admin page
-  if (!isAdminRoute) {
-    const navbar = Navbar();
-    document.body.insertBefore(navbar, app);
-  }
+  // ✅ Always Show Navbar
+  const navbar = Navbar();
+  document.body.insertBefore(navbar, app);
 
   // ✅ Route logic
   switch (path) {
@@ -84,11 +79,6 @@ function handleRouting() {
       app.appendChild(DashboardLayout(() => Dashboard()));
       break;
 
-    case "/admin":
-      // ✅ Admin Panel is standalone — no layout, sidebar, footer, or user navbar
-      app.appendChild(AdminPanel());
-      break;
-
     case "/resources":
       if (loggedIn) {
         app.appendChild(DashboardLayout(() => ResourceCategoryPage()));
@@ -107,7 +97,7 @@ function handleRouting() {
 
     default:
       const match = path.match(
-        /^\/resources\/(primary|highschool)\/(notes|exams|ebooks|tutorials|schemes|lessons)$/
+        /^\/resources\/(primary|highschool)\/(notes|exams|ebooks|schemes|lessons)$/
       );
 
       if (match) {
@@ -120,13 +110,11 @@ function handleRouting() {
       }
   }
 
-  // ✅ Show footer only if NOT on admin panel
-  if (!isAdminRoute) {
-    const footer = Footer();
-    document.body.appendChild(footer);
-    setupDarkModeToggle();
-    animateFooterOnScroll();
-  }
+  // ✅ Always show footer
+  const footer = Footer();
+  document.body.appendChild(footer);
+  setupDarkModeToggle();
+  animateFooterOnScroll();
 }
 
 // 🌙 Dark mode toggle

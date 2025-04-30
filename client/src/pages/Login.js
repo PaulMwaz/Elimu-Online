@@ -59,9 +59,15 @@ export function Login() {
           const result = await res.json();
 
           if (res.ok && result.token) {
-            // ✅ Updated to handle the correct response structure: { user, token }
             localStorage.setItem("user", JSON.stringify(result.user));
-            localStorage.setItem("token", result.token);
+
+            if (result.user.is_admin) {
+              localStorage.setItem("adminToken", result.token); // ✅ Save Admin token separately
+              console.log("✅ Logged in as Admin");
+            } else {
+              localStorage.setItem("token", result.token); // ✅ Save User token
+              console.log("✅ Logged in as User");
+            }
 
             sessionStorage.setItem("showToast", "1");
 
@@ -84,6 +90,7 @@ export function Login() {
       logoutBtn.addEventListener("click", () => {
         localStorage.removeItem("user");
         localStorage.removeItem("token");
+        localStorage.removeItem("adminToken"); // ✅ Also remove adminToken cleanly
 
         history.pushState({}, "", "/login");
         window.dispatchEvent(new Event("popstate"));

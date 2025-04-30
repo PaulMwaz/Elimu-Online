@@ -32,7 +32,6 @@ export function Sidebar() {
           ${linkHTML("/resources/primary/notes", "📘", "Notes")}
           ${linkHTML("/resources/primary/exams", "✅", "Exams")}
           ${linkHTML("/resources/primary/ebooks", "📚", "E-Books")}
-          ${linkHTML("/resources/primary/tutorials", "🎓", "Tutorials")}
           ${linkHTML("/resources/primary/schemes", "🗂️", "Schemes")}
           ${linkHTML("/resources/primary/lessons", "🧠", "Lesson Plans")}
         </div>
@@ -41,7 +40,6 @@ export function Sidebar() {
           ${linkHTML("/resources/highschool/notes", "📘", "Notes")}
           ${linkHTML("/resources/highschool/exams", "✅", "Exams")}
           ${linkHTML("/resources/highschool/ebooks", "📚", "E-Books")}
-          ${linkHTML("/resources/highschool/tutorials", "🎓", "Tutorials")}
           ${linkHTML("/resources/highschool/schemes", "🗂️", "Schemes")}
           ${linkHTML("/resources/highschool/lessons", "🧠", "Lesson Plans")}
         </div>

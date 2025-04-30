@@ -1,3 +1,5 @@
+// 📁 src/components/Navbar.js
+
 export function Navbar() {
   const nav = document.createElement("nav");
   nav.className = `
@@ -87,25 +89,40 @@ export function Navbar() {
   return nav;
 }
 
-// ✅ Handles logout & rerenders layout
+// ✅ Handles logout for Admins and Guests
 function handleLogout() {
-  const API_BASE_URL =
-    window.location.hostname === "localhost"
-      ? "http://localhost:5555"
-      : "https://elimu-online.onrender.com";
+  const isLocal =
+    window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1";
+  const API_BASE_URL = isLocal
+    ? "http://localhost:5555"
+    : "https://elimu-online.onrender.com";
 
-  fetch(`${API_BASE_URL}/api/logout`, {
-    method: "POST",
-    credentials: "include",
-  })
-    .then(() => {
-      localStorage.removeItem("user");
-      history.pushState({}, "", "/login");
-      window.dispatchEvent(new Event("popstate"));
+  const isAdmin = !!localStorage.getItem("adminToken");
+
+  if (isAdmin) {
+    // ✅ Admin: call backend logout
+    fetch(`${API_BASE_URL}/api/logout`, {
+      method: "POST",
+      credentials: "include",
     })
-    .catch((err) => {
-      console.error("Logout failed:", err.message);
-    });
+      .then(() => {
+        console.log("✅ Admin logout successful. Clearing storage...");
+        localStorage.removeItem("adminToken");
+        localStorage.removeItem("user");
+        localStorage.removeItem("token");
+        window.location.href = "/"; // full reload
+      })
+      .catch((err) => {
+        console.error("❌ Admin logout failed:", err.message);
+      });
+  } else {
+    // ✅ Guest: frontend logout only
+    console.log("✅ Guest logout successful. Clearing storage...");
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    window.location.href = "/"; // full reload
+  }
 }
 
 // ✅ Checks if user is logged in

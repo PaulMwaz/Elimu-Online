@@ -1,7 +1,11 @@
-from app import create_app  # ✅ absolute import works for gunicorn
+from app import create_app
+from flask_cors import CORS
 import os
 
 app = create_app()
+
+# ✅ Enable CORS for all routes
+CORS(app)
 
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 5555))

@@ -16,8 +16,7 @@ export function Register() {
     <div class="max-w-md mx-auto text-left bg-white p-6 rounded shadow">
       <label class="block text-sm font-medium mb-1">Full Name</label>
       <div class="relative mb-4">
-        <span class="absolute top-2.5 left-3 text-gray-400">🧑🎓</span>
-        <input id="registerName" type="text" placeholder="Full Name" class="w-full pl-10 pr-3 py-2 border rounded focus:outline-blue-500" autofocus />
+        <input id="registerName" type="text" placeholder="Full Name" class="w-full p-2 border rounded focus:outline-blue-500" autofocus />
       </div>
 
       <label class="block text-sm font-medium mb-1">Email</label>
@@ -57,14 +56,12 @@ export function Register() {
     </div>
   `;
 
-  // 💡 Attach JS logic after DOM is inserted
   setTimeout(() => {
     const toggleBtn = document.getElementById("togglePassword");
     const passwordInput = document.getElementById("registerPassword");
     const confirmInput = document.getElementById("confirmPassword");
     const msgBox = document.getElementById("registerMessage");
 
-    // 👁 Show/hide password
     toggleBtn.addEventListener("click", () => {
       const isHidden = passwordInput.type === "password";
       passwordInput.type = isHidden ? "text" : "password";
@@ -72,7 +69,6 @@ export function Register() {
       toggleBtn.textContent = isHidden ? "Hide" : "Show";
     });
 
-    // 🌐 SPA Navigation
     document.querySelectorAll("[data-link]").forEach((link) => {
       link.addEventListener("click", (e) => {
         e.preventDefault();
@@ -81,7 +77,6 @@ export function Register() {
       });
     });
 
-    // ✅ Registration Logic
     document
       .getElementById("registerBtn")
       .addEventListener("click", async () => {
@@ -116,8 +111,6 @@ export function Register() {
 
           if (res.ok) {
             msgBox.innerHTML = `<span class='text-green-600'>🎉 Successfully registered! You can now <a href="/login" data-link class="underline text-blue-600">login here</a>.</span>`;
-
-            // ✅ Clear form
             document.getElementById("registerName").value = "";
             document.getElementById("registerEmail").value = "";
             passwordInput.value = "";

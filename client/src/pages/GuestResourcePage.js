@@ -1,30 +1,26 @@
 // 📁 src/pages/GuestResourcePage.js
+
 export function GuestResourcePage() {
-  const div = document.createElement("div");
-  div.className = "py-20 px-6 text-center bg-gray-50";
+  const section = document.createElement("section");
+  section.className =
+    "container mx-auto py-20 px-6 flex flex-col items-center text-center";
 
-  div.innerHTML = `
-    <section class="max-w-3xl mx-auto bg-white rounded shadow p-10">
-      <h1 class="text-3xl font-bold text-blue-700 mb-4">Access Learning Resources</h1>
-      <p class="text-lg text-gray-700 mb-6">
-        Elimu-Online provides quality, curriculum-aligned resources for Primary and High School students.
-        <br>To continue, please log in or create a free account.
+  section.innerHTML = `
+      <h2 class="text-4xl font-bold text-blue-800 mb-6">Resources Access</h2>
+      <p class="text-gray-600 text-lg mb-8 max-w-2xl">
+        You need to be logged in to view and download educational resources.
+        Create an account or login to access Primary School and High School Notes, Exams, E-Books, Lesson Plans, and more!
       </p>
-
-      <div class="flex justify-center gap-6 mt-6">
-        <a href="/login" data-link class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition">
+  
+      <div class="flex gap-6">
+        <a href="/login" class="px-6 py-3 rounded bg-blue-600 text-white font-semibold hover:bg-blue-700 transition">
           Login
         </a>
-        <a href="/register" data-link class="bg-gray-200 text-blue-700 px-6 py-2 rounded hover:bg-gray-300 transition">
+        <a href="/register" class="px-6 py-3 rounded bg-green-600 text-white font-semibold hover:bg-green-700 transition">
           Register
         </a>
       </div>
+    `;
 
-      <div class="mt-10 text-sm text-gray-500">
-        🔐 Files are protected. Viewing & downloading is only available to logged-in users.
-      </div>
-    </section>
-  `;
-
-  return div;
+  return section;
 }

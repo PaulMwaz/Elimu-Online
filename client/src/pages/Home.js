@@ -8,6 +8,7 @@ import { SuccessMetrics } from "../components/SuccessMetrics.js";
 export function Home() {
   const container = document.createElement("div");
 
+  // Append homepage sections in order
   container.appendChild(HeroSlider());
   container.appendChild(WhyChooseUs());
   container.appendChild(SuccessMetrics());
