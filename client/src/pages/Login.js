@@ -1,8 +1,8 @@
 export function Login() {
   const section = document.createElement("section");
   section.className =
-    "min-h-screen bg-cover bg-center flex items-center justify-center px-4";
-  section.style.backgroundImage = "url('/images/slide4.jpg')"; // ✅ Background image path
+    "min-h-screen bg-cover bg-center flex items-center justify-center px-4 py-24";
+  section.style.backgroundImage = "url('/images/slide4.jpg')"; // ✅ Set background image
 
   const user = JSON.parse(localStorage.getItem("user"));
   const isLoggedIn = user && user.full_name;
@@ -15,7 +15,7 @@ export function Login() {
     : "https://elimu-online.onrender.com";
 
   section.innerHTML = `
-    <div class="bg-white bg-opacity-90 p-8 rounded shadow-lg w-full max-w-md">
+    <div class="bg-white bg-opacity-90 backdrop-blur-md p-6 md:p-8 rounded shadow-lg w-full max-w-[380px] md:max-w-[420px]">
       <h1 class="text-2xl md:text-3xl font-bold text-center text-blue-600 mb-2">
         Login to Elimu-Online
       </h1>
@@ -38,11 +38,9 @@ export function Login() {
             <button type="button" id="togglePassword" class="absolute right-3 top-2 text-gray-500 text-sm">👁️</button>
           </div>
 
-          <div class="flex justify-between items-center text-sm">
-            <label class="flex items-center space-x-2">
-              <input type="checkbox" class="form-checkbox" />
-              <span>Remember me</span>
-            </label>
+          <div class="flex items-center text-sm mb-2">
+            <input type="checkbox" id="rememberMe" class="mr-2" />
+            <label for="rememberMe" class="text-sm">Remember me</label>
           </div>
 
           <button id="loginBtn" class="w-full py-2 bg-blue-600 text-white font-semibold rounded hover:bg-blue-700 transition">
@@ -50,7 +48,7 @@ export function Login() {
           </button>
 
           <p class="text-center text-sm mt-4">
-            Don’t have an account? <a href="/register" class="text-blue-600 hover:underline">Register</a>
+            Don’t have an account? <a href="/register" data-link class="text-blue-600 hover:underline">Register</a>
           </p>
         `
             : `
@@ -72,6 +70,7 @@ export function Login() {
         const passwordInput = document.getElementById("loginPassword");
         passwordInput.type =
           passwordInput.type === "password" ? "text" : "password";
+        toggleBtn.textContent = passwordInput.type === "password" ? "👁️" : "🙈";
       });
     }
 
@@ -129,6 +128,14 @@ export function Login() {
         window.dispatchEvent(new Event("popstate"));
       });
     }
+
+    document.querySelectorAll("[data-link]").forEach((link) => {
+      link.addEventListener("click", (e) => {
+        e.preventDefault();
+        history.pushState({}, "", link.getAttribute("href"));
+        window.dispatchEvent(new Event("popstate"));
+      });
+    });
   }, 100);
 
   return section;

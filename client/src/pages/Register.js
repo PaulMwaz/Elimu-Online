@@ -1,8 +1,8 @@
 export function Register() {
   const section = document.createElement("section");
   section.className =
-    "min-h-screen bg-cover bg-center flex items-center justify-center px-4 py-24"; // ✅ Added py-24
-  section.style.backgroundImage = "url('/images/register-bg.jpg')";
+    "min-h-screen bg-cover bg-center flex items-center justify-center px-4 py-24";
+  section.style.backgroundImage = "url('/images/register-bg.jpg')"; // ✅ Updated background
 
   const isLocal =
     window.location.hostname === "localhost" ||
