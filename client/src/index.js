@@ -5,6 +5,8 @@ import { Home } from "./pages/Home.js";
 import { About } from "./pages/About.js";
 import { Login } from "./pages/Login.js";
 import { Register } from "./pages/Register.js";
+import { ForgotPassword } from "./pages/ForgotPassword.js";
+import { ResetPassword } from "./pages/ResetPassword.js";
 import { Dashboard } from "./pages/Dashboard.js";
 import { LevelDetailPage } from "./pages/LevelDetailPage.js";
 import { ResourceCategoryPage } from "./pages/ResourceCategoryPage.js";
@@ -31,32 +33,27 @@ window.addEventListener("DOMContentLoaded", () => {
   window.addEventListener("popstate", handleRouting);
 });
 
-// 🔁 SPA Routing Handler
 function handleRouting() {
   const app = document.getElementById("app");
   const path = window.location.pathname;
   const user = JSON.parse(localStorage.getItem("user"));
-  const loggedIn = !!user || !!localStorage.getItem("adminToken"); // ✅ Support admin login
+  const loggedIn = !!user || !!localStorage.getItem("adminToken");
   const appIsAdmin = !!localStorage.getItem("adminToken");
 
   app.innerHTML = "";
 
-  // Remove old layout elements
   document.querySelector("nav")?.remove();
   document.querySelector("aside")?.remove();
   document.querySelector("footer")?.remove();
 
-  // ✅ Show Sidebar if logged in
   if (loggedIn) {
     const sidebar = Sidebar();
     document.body.insertBefore(sidebar, app);
   }
 
-  // ✅ Always Show Navbar
   const navbar = Navbar();
   document.body.insertBefore(navbar, app);
 
-  // ✅ Route logic
   switch (path) {
     case "/":
     case "/home":
@@ -73,6 +70,16 @@ function handleRouting() {
 
     case "/register":
       app.appendChild(Register());
+      break;
+
+    case "/forgot-password":
+      app.appendChild(ForgotPassword());
+      break;
+
+    case "/reset-password":
+      const urlParams = new URLSearchParams(window.location.search);
+      const token = urlParams.get("token");
+      app.appendChild(ResetPassword(token));
       break;
 
     case "/dashboard":
@@ -110,14 +117,12 @@ function handleRouting() {
       }
   }
 
-  // ✅ Always show footer
   const footer = Footer();
   document.body.appendChild(footer);
   setupDarkModeToggle();
   animateFooterOnScroll();
 }
 
-// 🌙 Dark mode toggle
 function setupDarkModeToggle() {
   const toggle = document.getElementById("darkToggle");
   const root = document.documentElement;
@@ -128,7 +133,6 @@ function setupDarkModeToggle() {
   }
 }
 
-// 🧾 Animate footer appearance
 function animateFooterOnScroll() {
   const footer = document.getElementById("main-footer");
   if (!footer) return;

@@ -27,6 +27,8 @@ htmlcov/
 *.db
 *.sqlite3
 instance/
+*.bak
+*.sql
 
 # ----------------------------
 # 📦 Virtual Environments
@@ -34,6 +36,7 @@ instance/
 venv/
 .venv/
 env/
+ENV/
 
 # ----------------------------
 # 🛠 Build Tools
@@ -42,6 +45,8 @@ env/
 *.spec
 pip-log.txt
 pip-delete-this-directory.txt
+build/
+dist/
 
 # ----------------------------
 # 📁 Migrations
@@ -54,19 +59,35 @@ migrations/versions/__pycache__/
 # 🔐 Environment Secrets
 # ----------------------------
 .env
+.env.*
 *.env
+*.key
+*.pem
 
 # ----------------------------
 # ☁️ Google Cloud
 # ----------------------------
 *.json             # Ignore all credentials by default
-!gcp-example.json  # But allow one example file for docs or team templates
+!gcp-example.json  # Allow one safe example for docs/templates
+
+# ----------------------------
+# ⚙️ Vite Frontend (Node.js)
+# ----------------------------
+node_modules/
+dist/
+.cache/
+.vite/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
 # ----------------------------
 # 🧠 IDEs & Editors
 # ----------------------------
 .vscode/
 .idea/
+*.swp
+*.swo
 
 # ----------------------------
 # 🌍 Deployment & Config
@@ -75,3 +96,12 @@ render.yaml
 .gcloudignore
 .dockerignore
 *.log
+*.pid
+.DS_Store
+Thumbs.db
+
+# ----------------------------
+# 🔎 Lint / Prettier
+# ----------------------------
+.pylint.d/
+.prettier-cache/

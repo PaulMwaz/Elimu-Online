@@ -2,7 +2,7 @@ export function Login() {
   const section = document.createElement("section");
   section.className =
     "min-h-screen bg-cover bg-center flex items-center justify-center px-4 py-24";
-  section.style.backgroundImage = "url('/images/slide4.jpg')"; // ✅ Set background image
+  section.style.backgroundImage = "url('/images/slide4.jpg')";
 
   const user = JSON.parse(localStorage.getItem("user"));
   const isLoggedIn = user && user.full_name;
@@ -38,9 +38,12 @@ export function Login() {
             <button type="button" id="togglePassword" class="absolute right-3 top-2 text-gray-500 text-sm">👁️</button>
           </div>
 
-          <div class="flex items-center text-sm mb-2">
-            <input type="checkbox" id="rememberMe" class="mr-2" />
-            <label for="rememberMe" class="text-sm">Remember me</label>
+          <div class="flex items-center justify-between text-sm">
+            <label class="flex items-center">
+              <input type="checkbox" id="rememberMe" class="mr-2" />
+              Remember me
+            </label>
+            <a href="/forgot-password" data-link class="text-blue-600 hover:underline">Forgot Password?</a>
           </div>
 
           <button id="loginBtn" class="w-full py-2 bg-blue-600 text-white font-semibold rounded hover:bg-blue-700 transition">
