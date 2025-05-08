@@ -1,7 +1,10 @@
+// 📌 Renders the About Us page section with platform description
 export function About() {
+  // 🧱 Create the main section wrapper
   const section = document.createElement("section");
-  section.className = "container py-12 mt-28 text-center"; // 👈 added mt-28 for spacing
+  section.className = "container py-12 mt-28 text-center"; // Adds vertical spacing at the top
 
+  // 📝 Define inner HTML content including title and description
   section.innerHTML = `
     <h1 class="text-3xl font-bold mb-4 text-secondary">About Elimu-Online</h1>
     <p class="text-lg max-w-xl mx-auto text-gray-700 dark:text-gray-300">
@@ -11,5 +14,6 @@ export function About() {
     </p>
   `;
 
+  // ✅ Return the fully composed section
   return section;
 }

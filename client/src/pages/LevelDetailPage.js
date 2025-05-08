@@ -1,9 +1,12 @@
+// Renders the category selection page for Primary or High School
 export function LevelDetailPage(level) {
   const section = document.createElement("section");
   section.className = "container py-12 text-center";
 
+  // Determine the education level title
   const levelTitle = level === "primary" ? "Primary School" : "High School";
 
+  // Create section HTML with clickable resource categories
   section.innerHTML = `
     <h1 class="text-3xl font-bold text-secondary mb-6">${levelTitle} Categories</h1>
 
@@ -26,7 +29,7 @@ export function LevelDetailPage(level) {
     </div>
   `;
 
-  // Handle card click and route dynamically
+  // 🔁 Add event listeners to handle navigation when a card is clicked
   setTimeout(() => {
     section.querySelectorAll(".category-card").forEach((card) => {
       card.addEventListener("click", () => {

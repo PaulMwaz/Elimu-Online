@@ -1,21 +1,24 @@
+// 📁 src/components/Footer.js
+// 📦 Renders a dynamic footer based on user authentication status (guest or logged in)
+
 export function Footer() {
   const footer = document.createElement("footer");
 
   const isLoggedIn = localStorage.getItem("user") !== null;
 
   if (isLoggedIn) {
-    // 🔐 Minimal footer for logged-in users
+    // 🔐 Minimal footer for authenticated users (centered text)
     footer.className =
       "bg-gray-900 text-white text-center text-sm py-6 md:pl-[16rem]";
     footer.innerHTML = `© 2025 Elimu-Online. All rights reserved.`;
   } else {
-    // 🌐 Full footer for guests
+    // 🌐 Full informational footer for guest users
     footer.className = "bg-gray-900 text-white w-full px-6 pt-10 pb-5";
 
     footer.innerHTML = `
       <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-y-8 gap-x-12 text-sm text-center md:text-left">
         
-        <!-- Column 1: Brand Info -->
+        <!-- 📌 Brand Overview Section -->
         <div>
           <h4 class="font-bold text-lg mb-2">Elimu-Online</h4>
           <p class="leading-relaxed mb-3">
@@ -28,7 +31,7 @@ export function Footer() {
           </div>
         </div>
 
-        <!-- Column 2: Quick Links -->
+        <!-- 🧭 Navigation Links -->
         <div>
           <h4 class="font-semibold text-lg mb-2">Quick Links</h4>
           <ul class="space-y-2">
@@ -38,7 +41,7 @@ export function Footer() {
           </ul>
         </div>
 
-        <!-- Column 3: Contact Info -->
+        <!-- 📞 Contact Information -->
         <div>
           <h4 class="font-semibold text-lg mb-2">Contact</h4>
           <p>Email: <a href="mailto:info@elimu-online.org" class="hover:underline">info@elimu-online.org</a></p>
@@ -46,13 +49,14 @@ export function Footer() {
         </div>
       </div>
 
+      <!-- ⚖️ Copyright Bar -->
       <div class="text-center text-xs mt-6 pt-4 border-t border-gray-700">
         © 2025 Elimu-Online. All rights reserved.
       </div>
     `;
   }
 
-  // SPA routing on footer links
+  // 🔁 SPA Routing for footer navigation links
   setTimeout(() => {
     footer.querySelectorAll("[data-link]").forEach((link) => {
       link.addEventListener("click", (e) => {

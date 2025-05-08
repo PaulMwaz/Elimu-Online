@@ -1,4 +1,5 @@
 // 📁 src/components/Navbar.js
+// 📌 Navigation bar component for both guest and logged-in users
 
 export function Navbar() {
   const nav = document.createElement("nav");
@@ -6,6 +7,7 @@ export function Navbar() {
     bg-blue-600 text-white px-6 py-4 shadow fixed top-0 left-0 right-0 z-30 w-full
   `;
 
+  // 🧱 Define structure of navbar based on login state
   nav.innerHTML = `
     <div class="flex items-center justify-between">
       <span class="text-xl font-bold whitespace-nowrap">Elimu-Online</span>
@@ -52,7 +54,7 @@ export function Navbar() {
   `;
 
   setTimeout(() => {
-    // 🧭 SPA Navigation
+    // 🌐 Enable client-side routing (SPA behavior)
     nav.querySelectorAll("[data-link]").forEach((link) => {
       link.addEventListener("click", (e) => {
         e.preventDefault();
@@ -62,13 +64,13 @@ export function Navbar() {
       });
     });
 
-    // ✅ Attach logout event
+    // 🔐 Attach logout logic
     const logoutBtn = document.getElementById("logoutBtn");
     if (logoutBtn) {
       logoutBtn.addEventListener("click", handleLogout);
     }
 
-    // ✅ Sidebar toggle for mobile (logged-in users)
+    // 📱 Sidebar toggle (admin mobile)
     const sidebarToggle = document.getElementById("sidebarToggle");
     if (sidebarToggle) {
       sidebarToggle.addEventListener("click", () => {
@@ -77,7 +79,7 @@ export function Navbar() {
       });
     }
 
-    // ✅ Mobile menu toggle (for guests)
+    // 📱 Mobile nav toggle (guest)
     const mobileToggle = document.getElementById("mobileMenuToggle");
     if (mobileToggle) {
       mobileToggle.addEventListener("click", () => {
@@ -89,7 +91,7 @@ export function Navbar() {
   return nav;
 }
 
-// ✅ Handles logout for Admins and Guests
+// 🚪 Handles both guest and admin logout functionality
 function handleLogout() {
   const isLocal =
     window.location.hostname === "localhost" ||
@@ -101,36 +103,28 @@ function handleLogout() {
   const isAdmin = !!localStorage.getItem("adminToken");
 
   if (isAdmin) {
-    // ✅ Admin: call backend logout
     fetch(`${API_BASE_URL}/api/logout`, {
       method: "POST",
       credentials: "include",
-    })
-      .then(() => {
-        console.log("✅ Admin logout successful. Clearing storage...");
-        localStorage.removeItem("adminToken");
-        localStorage.removeItem("user");
-        localStorage.removeItem("token");
-        window.location.href = "/"; // full reload
-      })
-      .catch((err) => {
-        console.error("❌ Admin logout failed:", err.message);
-      });
+    }).then(() => {
+      localStorage.removeItem("adminToken");
+      localStorage.removeItem("user");
+      localStorage.removeItem("token");
+      window.location.href = "/";
+    });
   } else {
-    // ✅ Guest: frontend logout only
-    console.log("✅ Guest logout successful. Clearing storage...");
     localStorage.removeItem("user");
     localStorage.removeItem("token");
-    window.location.href = "/"; // full reload
+    window.location.href = "/";
   }
 }
 
-// ✅ Checks if user is logged in
+// 🧠 Check login state from localStorage
 function isLoggedIn() {
   return localStorage.getItem("user") !== null;
 }
 
-// ✅ Gets first name from localStorage
+// 🧾 Extracts the first name from user object
 function getUserName() {
   try {
     const user = JSON.parse(localStorage.getItem("user"));

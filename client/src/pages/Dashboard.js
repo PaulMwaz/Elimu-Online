@@ -1,11 +1,14 @@
+// 📌 Renders the Admin Dashboard page with KPIs, recent uploads, and actions
 export function Dashboard() {
+  // 🔧 Create section container for dashboard layout
   const section = document.createElement("section");
   section.className = "container mx-auto py-12 px-6";
 
+  // 🧱 Inject static dashboard content including KPIs and recent file list
   section.innerHTML = `
       <h1 class="text-3xl font-bold text-center text-blue-700 mb-10">Admin Dashboard</h1>
   
-      <!-- KPI Cards Grid -->
+      <!-- 🔢 KPI Cards Grid -->
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 mb-10">
         ${kpiCard("📁", "Files Uploaded", "128")}
         ${kpiCard("👥", "Users Registered", "42")}
@@ -13,7 +16,7 @@ export function Dashboard() {
         ${kpiCard("📚", "Resources Available", "350")}
       </div>
   
-      <!-- Recent Files -->
+      <!-- 📂 Recent Uploaded Files List -->
       <div class="bg-white shadow rounded-lg p-6 mb-8">
         <h2 class="text-xl font-semibold text-blue-600 mb-4">Recent Uploaded Files</h2>
         <ul class="space-y-2 text-gray-700">
@@ -23,7 +26,7 @@ export function Dashboard() {
         </ul>
       </div>
   
-      <!-- Quick Actions -->
+      <!-- ⚙️ Quick Admin Actions -->
       <div class="bg-white shadow rounded-lg p-6">
         <h2 class="text-xl font-semibold text-blue-600 mb-4">Quick Actions</h2>
         <div class="flex flex-wrap gap-4">
@@ -36,6 +39,7 @@ export function Dashboard() {
   return section;
 }
 
+// 🔄 Helper function to generate individual KPI cards
 function kpiCard(icon, title, value) {
   return `
       <div class="bg-white shadow rounded-lg p-6 text-center">

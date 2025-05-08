@@ -5,16 +5,17 @@ import { AboutPreview } from "../components/AboutPreview.js";
 import { WhyChooseUs } from "../components/WhyChooseUs.js";
 import { SuccessMetrics } from "../components/SuccessMetrics.js";
 
+// Renders the full homepage layout with all its key sections
 export function Home() {
   const container = document.createElement("div");
 
-  // Append homepage sections in order
-  container.appendChild(HeroSlider());
-  container.appendChild(WhyChooseUs());
-  container.appendChild(SuccessMetrics());
-  container.appendChild(AboutPreview());
-  container.appendChild(Testimonials());
-  container.appendChild(MeetTeam());
+  // ✅ Append each homepage section in logical visual order
+  container.appendChild(HeroSlider()); // Fullscreen image carousel
+  container.appendChild(WhyChooseUs()); // Feature highlights
+  container.appendChild(SuccessMetrics()); // Impact statistics
+  container.appendChild(AboutPreview()); // Short 'About Us' section
+  container.appendChild(Testimonials()); // User feedback carousel
+  container.appendChild(MeetTeam()); // Team introduction
 
   return container;
 }

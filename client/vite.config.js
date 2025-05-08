@@ -1,21 +1,23 @@
 import { defineConfig } from "vite";
 import history from "connect-history-api-fallback";
 
+// 📦 Vite configuration for Elimu-Online SPA
 export default defineConfig({
-  root: "./",
+  root: "./", // 📁 Set root directory for the frontend
+
   server: {
-    port: 5173,
-    open: true,
+    port: 5173, // 🌐 Dev server port
+    open: true, // 🚀 Automatically open in browser on start
   },
+
   plugins: [
     {
-      name: "spa-fallback",
+      name: "spa-fallback", // 🔁 Plugin for handling SPA routes
       configureServer(server) {
         server.middlewares.use(
           history({
-            // ✅ Ensures correct fallback for clean URLs like /about or /login
-            disableDotRule: true,
-            htmlAcceptHeaders: ["text/html", "application/xhtml+xml"],
+            disableDotRule: true, // ✅ Allows dots in URL paths (e.g., /reset-password)
+            htmlAcceptHeaders: ["text/html", "application/xhtml+xml"], // 📄 Accept headers for fallback
           })
         );
       },

@@ -1,9 +1,11 @@
+// Renders the registration form and handles user sign-up logic
 export function Register() {
   const section = document.createElement("section");
   section.className =
     "min-h-screen bg-cover bg-center flex items-center justify-center px-4 py-24";
-  section.style.backgroundImage = "url('/images/register-bg.jpg')"; // ✅ Updated background
+  section.style.backgroundImage = "url('/images/register-bg.jpg')";
 
+  // Determine API endpoint based on environment
   const isLocal =
     window.location.hostname === "localhost" ||
     window.location.hostname === "127.0.0.1";
@@ -11,6 +13,7 @@ export function Register() {
     ? "http://localhost:5555"
     : "https://elimu-online.onrender.com";
 
+  // Inject form HTML
   section.innerHTML = `
     <div class="bg-white bg-opacity-90 backdrop-blur-md p-6 md:p-8 rounded shadow-lg w-full max-w-[380px] md:max-w-[420px]">
       <h1 class="text-2xl md:text-3xl font-bold text-center text-blue-600 mb-2">Create Your Account</h1>
@@ -58,12 +61,14 @@ export function Register() {
     </div>
   `;
 
+  // Add interactivity after DOM is rendered
   setTimeout(() => {
     const toggleBtn = document.getElementById("togglePassword");
     const passwordInput = document.getElementById("registerPassword");
     const confirmInput = document.getElementById("confirmPassword");
     const msgBox = document.getElementById("registerMessage");
 
+    // Toggle password visibility
     toggleBtn.addEventListener("click", () => {
       const isHidden = passwordInput.type === "password";
       passwordInput.type = isHidden ? "text" : "password";
@@ -71,6 +76,7 @@ export function Register() {
       toggleBtn.textContent = isHidden ? "Hide" : "Show";
     });
 
+    // SPA navigation for internal links
     document.querySelectorAll("[data-link]").forEach((link) => {
       link.addEventListener("click", (e) => {
         e.preventDefault();
@@ -79,6 +85,7 @@ export function Register() {
       });
     });
 
+    // Handle form submission
     document
       .getElementById("registerBtn")
       .addEventListener("click", async () => {
@@ -90,6 +97,7 @@ export function Register() {
 
         msgBox.innerHTML = "";
 
+        // Validate inputs
         if (!full_name || !email || !password || !confirmPassword) {
           msgBox.innerHTML = `<span class="text-red-600">❌ Please fill all fields.</span>`;
           return;
@@ -102,6 +110,7 @@ export function Register() {
 
         msgBox.innerHTML = "Registering...";
 
+        // Submit registration data
         try {
           const res = await fetch(`${API_BASE_URL}/api/register`, {
             method: "POST",

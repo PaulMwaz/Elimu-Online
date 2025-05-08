@@ -1,8 +1,14 @@
+// 📁 src/components/DeleteModal.js
+// 🧼 Renders a modal dialog to confirm file deletion, sends DELETE request, and calls callback on success.
+
 export function DeleteModal(file, API_BASE_URL, token, onDeleteSuccess) {
   const modal = document.createElement("div");
+
+  // Styling for backdrop and modal container
   modal.className =
     "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50";
 
+  // Modal structure with title, confirmation text, and buttons
   modal.innerHTML = `
     <div class="bg-white p-6 rounded-lg shadow-md w-full max-w-md animate-fade-in">
       <h2 class="text-lg font-semibold mb-4 text-gray-800">Delete File</h2>
@@ -20,22 +26,23 @@ export function DeleteModal(file, API_BASE_URL, token, onDeleteSuccess) {
     </div>
   `;
 
+  // Delay to ensure DOM elements are available before binding
   setTimeout(() => {
     const cancelBtn = document.getElementById("cancelDelete");
     const confirmBtn = document.getElementById("confirmDelete");
 
+    // ❌ Cancel button closes the modal without action
     cancelBtn.onclick = () => {
-      console.log("🚫 Delete cancelled by user.");
       modal.remove();
     };
 
+    // ✅ Confirm button triggers API delete call
     confirmBtn.onclick = async () => {
       confirmBtn.disabled = true;
       confirmBtn.textContent = "Deleting...";
 
       try {
         const deleteUrl = `${API_BASE_URL}/api/admin/delete/${file.id}`;
-        console.log("🔗 Sending DELETE request to:", deleteUrl);
 
         const res = await fetch(deleteUrl, {
           method: "DELETE",
@@ -45,7 +52,6 @@ export function DeleteModal(file, API_BASE_URL, token, onDeleteSuccess) {
         });
 
         const result = await res.json();
-        console.log("🗑️ Delete API response:", result);
 
         if (res.ok) {
           alert("✅ File deleted successfully!");
@@ -53,10 +59,8 @@ export function DeleteModal(file, API_BASE_URL, token, onDeleteSuccess) {
           modal.remove();
         } else {
           alert(`❌ Delete failed: ${result.error || "Unknown error."}`);
-          console.error("❌ Delete error response:", result);
         }
       } catch (err) {
-        console.error("🔥 Delete network/server error:", err);
         alert("❌ Delete failed: Unexpected network/server error.");
       } finally {
         confirmBtn.disabled = false;

@@ -1,16 +1,20 @@
+// 📁 src/pages/ResourceCategoryPage.js
 import { UploadForm } from "../components/UploadForm.js";
 import { FileCard } from "../components/FileCard.js";
 
+// Renders the resource listing page based on level and category
 export function ResourceCategoryPage(level = "", category = "") {
   const section = document.createElement("section");
   section.className = "max-w-6xl mx-auto px-4 py-10";
 
+  // Extract query parameters if level/category not provided directly
   const params = new URLSearchParams(window.location.search);
   if (!level || !category) {
     level = params.get("level") || "primary";
     category = params.get("category") || "notes";
   }
 
+  // Handle invalid URL or missing parameters
   if (!level || !category) {
     section.innerHTML = `
       <h2 class="text-3xl font-bold text-center text-blue-800 mb-10">Resources</h2>
@@ -20,6 +24,7 @@ export function ResourceCategoryPage(level = "", category = "") {
     return section;
   }
 
+  // Display dynamic title for the current level and category
   const title = `${capitalize(level)} ${capitalize(category)}`;
   const heading = document.createElement("h2");
   heading.className = "text-3xl font-bold text-center text-blue-800 mb-10";
@@ -28,6 +33,7 @@ export function ResourceCategoryPage(level = "", category = "") {
 
   const isAdmin = !!localStorage.getItem("adminToken");
 
+  // Render sections based on level
   if (level === "highschool") {
     renderGenericTermSections(section, category, isAdmin, [
       "Form 2",
@@ -53,12 +59,14 @@ export function ResourceCategoryPage(level = "", category = "") {
   return section;
 }
 
+// Capitalizes the first letter of a string
 function capitalize(str = "") {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
+// Loops through grades and terms, rendering each block accordingly
 function renderGenericTermSections(section, category, isAdmin, levels) {
-  const hasTerms = !["notes", "ebooks"].includes(category); // Notes and E-Books skip terms
+  const hasTerms = !["notes", "ebooks"].includes(category); // Notes & E-Books don't use terms
   const terms = ["Term 1", "Term 2", "Term 3"];
 
   levels.forEach((grade) => {
@@ -72,11 +80,13 @@ function renderGenericTermSections(section, category, isAdmin, levels) {
   });
 }
 
+// Renders a block of files (and upload option for admins) for each grade/term
 function renderTermBlock(section, grade, term = "", category, isAdmin) {
   const level = grade.includes("Form") ? "highschool" : "primary";
   const sectionWrapper = document.createElement("div");
   sectionWrapper.className = "mb-10";
 
+  // Section heading
   const termTitle = document.createElement("h3");
   termTitle.className = "text-2xl font-bold mb-4 text-blue-700";
   termTitle.textContent = `${grade} ${capitalize(category)}${
@@ -88,6 +98,7 @@ function renderTermBlock(section, grade, term = "", category, isAdmin) {
   filesContainer.className =
     "flex flex-col space-y-4 bg-white rounded-lg shadow-md p-4";
 
+  // Admin-only upload UI
   if (isAdmin) {
     const uploadFormWrapper = document.createElement("div");
     uploadFormWrapper.className = "mb-4";
@@ -107,7 +118,7 @@ function renderTermBlock(section, grade, term = "", category, isAdmin) {
         () =>
           refreshFiles("General", grade, term, level, category, fileListWrapper)
       );
-      uploadFormWrapper.innerHTML = ""; // remove existing form if any
+      uploadFormWrapper.innerHTML = ""; // Clear existing form
       uploadFormWrapper.appendChild(uploadForm);
     });
 
@@ -125,6 +136,7 @@ function renderTermBlock(section, grade, term = "", category, isAdmin) {
   refreshFiles("General", grade, term, level, category, fileListWrapper);
 }
 
+// Fetches resource files and populates them using FileCard components
 async function refreshFiles(subject, form, term, level, category, container) {
   container.innerHTML = "Loading files...";
 
@@ -145,7 +157,7 @@ async function refreshFiles(subject, form, term, level, category, container) {
 
     if (files.length > 0) {
       files.forEach((file) => {
-        const fileCard = FileCard(file); // Handles admin vs user buttons internally
+        const fileCard = FileCard(file); // Component handles role-specific buttons
         container.appendChild(fileCard);
       });
     } else {

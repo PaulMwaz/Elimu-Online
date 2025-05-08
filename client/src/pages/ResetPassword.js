@@ -1,8 +1,10 @@
+// Renders the Reset Password UI and handles password reset logic
 export function ResetPassword(token) {
   const section = document.createElement("section");
   section.className =
     "min-h-screen bg-gray-50 flex items-center justify-center px-4 py-24";
 
+  // Determine environment and API endpoint
   const isLocal =
     window.location.hostname === "localhost" ||
     window.location.hostname === "127.0.0.1";
@@ -10,6 +12,7 @@ export function ResetPassword(token) {
     ? "http://localhost:5555"
     : "https://elimu-online.onrender.com";
 
+  // Inject HTML structure for password reset form
   section.innerHTML = `
     <div class="bg-white shadow-xl p-6 md:p-8 rounded-lg w-full max-w-md relative">
       <h2 class="text-2xl font-bold text-center text-blue-600 mb-4">Reset Your Password</h2>
@@ -37,6 +40,7 @@ export function ResetPassword(token) {
     </div>
   `;
 
+  // Initialize interactive logic after DOM loads
   setTimeout(() => {
     const newPasswordInput = document.getElementById("newPassword");
     const confirmPasswordInput = document.getElementById("confirmPassword");
@@ -46,13 +50,14 @@ export function ResetPassword(token) {
     const toggleConfirm = document.getElementById("toggleConfirm");
     const strengthMeter = document.getElementById("strengthMeter");
 
-    // 🔁 Toggle visibility
+    // Toggle new password visibility
     toggleNew.addEventListener("click", () => {
       const type = newPasswordInput.type === "password" ? "text" : "password";
       newPasswordInput.type = type;
       toggleNew.textContent = type === "text" ? "🙈" : "👁️";
     });
 
+    // Toggle confirm password visibility
     toggleConfirm.addEventListener("click", () => {
       const type =
         confirmPasswordInput.type === "password" ? "text" : "password";
@@ -60,7 +65,7 @@ export function ResetPassword(token) {
       toggleConfirm.textContent = type === "text" ? "🙈" : "👁️";
     });
 
-    // 💪 Password strength checker
+    // Password strength meter logic
     newPasswordInput.addEventListener("input", () => {
       const val = newPasswordInput.value;
       const strength = getStrength(val);
@@ -68,6 +73,7 @@ export function ResetPassword(token) {
       strengthMeter.style.color = strength.color;
     });
 
+    // Evaluate password strength score
     function getStrength(password) {
       let score = 0;
       if (password.length >= 8) score++;
@@ -80,13 +86,14 @@ export function ResetPassword(token) {
       return { label: "Weak", color: "red" };
     }
 
-    // 🔁 Submit reset
+    // Handle reset button click
     resetBtn.addEventListener("click", async () => {
       const newPassword = newPasswordInput.value.trim();
       const confirmPassword = confirmPasswordInput.value.trim();
 
       msgBox.innerHTML = "";
 
+      // Validate inputs
       if (!newPassword || !confirmPassword) {
         msgBox.innerHTML = `<span class='text-red-600'>❌ Please fill in both password fields.</span>`;
         return;
@@ -110,6 +117,7 @@ export function ResetPassword(token) {
 
         const result = await res.json();
 
+        // Display success or failure
         if (res.ok) {
           msgBox.innerHTML = `<span class="text-green-600">✅ Password updated successfully! Redirecting to login...</span>`;
           setTimeout(() => {

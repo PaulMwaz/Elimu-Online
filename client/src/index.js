@@ -1,3 +1,6 @@
+// 📁 src/index.js
+
+// Import layout components and route-based pages
 import { Navbar } from "./components/Navbar.js";
 import { Footer } from "./components/Footer.js";
 import { Sidebar } from "./components/Sidebar.js";
@@ -13,6 +16,7 @@ import { ResourceCategoryPage } from "./pages/ResourceCategoryPage.js";
 import { GuestResourcePage } from "./pages/GuestResourcePage.js";
 import { DashboardLayout } from "./layouts/DashboardLayout.js";
 
+// Wait for the DOM to load before routing
 window.addEventListener("DOMContentLoaded", () => {
   const app = document.getElementById("app");
   if (!app) {
@@ -20,6 +24,7 @@ window.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
+  // Apply base layout styles
   document.body.classList.add(
     "flex",
     "flex-col",
@@ -30,30 +35,36 @@ window.addEventListener("DOMContentLoaded", () => {
   app.classList.add("flex-grow");
 
   handleRouting();
-  window.addEventListener("popstate", handleRouting);
+  window.addEventListener("popstate", handleRouting); // Enable SPA-style navigation
 });
 
+// Main router logic
 function handleRouting() {
   const app = document.getElementById("app");
   const path = window.location.pathname;
+
+  // Check authentication status
   const user = JSON.parse(localStorage.getItem("user"));
   const loggedIn = !!user || !!localStorage.getItem("adminToken");
   const appIsAdmin = !!localStorage.getItem("adminToken");
 
+  // Clear previous content and layout elements
   app.innerHTML = "";
-
   document.querySelector("nav")?.remove();
   document.querySelector("aside")?.remove();
   document.querySelector("footer")?.remove();
 
+  // Sidebar for authenticated users only
   if (loggedIn) {
     const sidebar = Sidebar();
     document.body.insertBefore(sidebar, app);
   }
 
+  // Navbar is always visible
   const navbar = Navbar();
   document.body.insertBefore(navbar, app);
 
+  // Route resolution logic
   switch (path) {
     case "/":
     case "/home":
@@ -103,6 +114,7 @@ function handleRouting() {
       break;
 
     default:
+      // Handle category-level dynamic routing
       const match = path.match(
         /^\/resources\/(primary|highschool)\/(notes|exams|ebooks|schemes|lessons)$/
       );
@@ -117,12 +129,18 @@ function handleRouting() {
       }
   }
 
+  // Append the footer after page content
   const footer = Footer();
   document.body.appendChild(footer);
+
+  // Enable dark mode toggle if present
   setupDarkModeToggle();
+
+  // Animate the footer when it comes into view
   animateFooterOnScroll();
 }
 
+// Handles toggling of dark mode via UI switch
 function setupDarkModeToggle() {
   const toggle = document.getElementById("darkToggle");
   const root = document.documentElement;
@@ -133,6 +151,7 @@ function setupDarkModeToggle() {
   }
 }
 
+// Adds a fade-in effect to footer on scroll
 function animateFooterOnScroll() {
   const footer = document.getElementById("main-footer");
   if (!footer) return;

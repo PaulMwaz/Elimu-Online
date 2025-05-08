@@ -1,10 +1,14 @@
 // 📁 src/components/FileCard.js
+// 📦 Renders a file card with actions like View, Download, and Admin options (Rename/Delete)
 
 export function FileCard(file) {
   const card = document.createElement("div");
+
+  // 📦 Container styling for each file card
   card.className =
     "flex flex-col md:flex-row md:items-center justify-between p-3 bg-gray-100 rounded-lg shadow-sm hover:shadow-md transition";
 
+  // 📝 File info section (filename as a clickable link)
   const fileInfo = document.createElement("div");
   fileInfo.className = "mb-2 md:mb-0";
   fileInfo.innerHTML = `
@@ -13,9 +17,11 @@ export function FileCard(file) {
     </a>
   `;
 
+  // 🔘 Action buttons container
   const actions = document.createElement("div");
   actions.className = "flex gap-2 flex-wrap justify-end";
 
+  // 🔍 View button
   const viewBtn = document.createElement("a");
   viewBtn.href = file.file_url;
   viewBtn.target = "_blank";
@@ -23,6 +29,7 @@ export function FileCard(file) {
     "px-3 py-1 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 text-sm";
   viewBtn.textContent = "View";
 
+  // 📥 Download button
   const downloadBtn = document.createElement("a");
   downloadBtn.href = file.file_url;
   downloadBtn.download = file.filename;
@@ -32,10 +39,11 @@ export function FileCard(file) {
 
   actions.append(viewBtn, downloadBtn);
 
-  // 🔥 If Admin: show Rename and Delete buttons too
+  // 🔐 Show admin controls (Rename/Delete) only if admin token is available
   const isAdmin = !!localStorage.getItem("adminToken");
 
   if (isAdmin) {
+    // ✏️ Rename Button
     const renameBtn = document.createElement("button");
     renameBtn.className =
       "px-3 py-1 bg-yellow-400 text-white rounded hover:bg-yellow-500 text-sm";
@@ -70,11 +78,11 @@ export function FileCard(file) {
           alert(`❌ Rename failed: ${err.error || "Unknown error"}`);
         }
       } catch (err) {
-        console.error(err);
         alert("❌ Server error during rename.");
       }
     });
 
+    // 🗑️ Delete Button
     const deleteBtn = document.createElement("button");
     deleteBtn.className =
       "px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm";
@@ -109,7 +117,6 @@ export function FileCard(file) {
           alert(`❌ Delete failed: ${err.error || "Unknown error"}`);
         }
       } catch (err) {
-        console.error(err);
         alert("❌ Server error during delete.");
       }
     });
@@ -117,6 +124,7 @@ export function FileCard(file) {
     actions.append(renameBtn, deleteBtn);
   }
 
+  // 🧩 Combine info and actions into the card
   card.append(fileInfo, actions);
   return card;
 }

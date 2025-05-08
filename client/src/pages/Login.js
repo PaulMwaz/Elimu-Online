@@ -1,3 +1,4 @@
+// Renders the login section and handles login/logout logic
 export function Login() {
   const section = document.createElement("section");
   section.className =
@@ -14,6 +15,7 @@ export function Login() {
     ? "http://localhost:5555"
     : "https://elimu-online.onrender.com";
 
+  // HTML structure for login/logout UI
   section.innerHTML = `
     <div class="bg-white bg-opacity-90 backdrop-blur-md p-6 md:p-8 rounded shadow-lg w-full max-w-[380px] md:max-w-[420px]">
       <h1 class="text-2xl md:text-3xl font-bold text-center text-blue-600 mb-2">
@@ -64,9 +66,11 @@ export function Login() {
     </div>
   `;
 
+  // Setup form and button interactions
   setTimeout(() => {
     const msgBox = document.getElementById("loginMessage");
 
+    // Toggle password visibility
     const toggleBtn = document.getElementById("togglePassword");
     if (toggleBtn) {
       toggleBtn.addEventListener("click", () => {
@@ -77,6 +81,7 @@ export function Login() {
       });
     }
 
+    // Handle login submission
     const loginBtn = document.getElementById("loginBtn");
     if (loginBtn) {
       loginBtn.addEventListener("click", async () => {
@@ -99,10 +104,8 @@ export function Login() {
 
             if (result.user.is_admin) {
               localStorage.setItem("adminToken", result.token);
-              console.log("✅ Logged in as Admin");
             } else {
               localStorage.setItem("token", result.token);
-              console.log("✅ Logged in as User");
             }
 
             sessionStorage.setItem("showToast", "1");
@@ -120,6 +123,7 @@ export function Login() {
       });
     }
 
+    // Handle logout action
     const logoutBtn = document.getElementById("logoutBtn");
     if (logoutBtn) {
       logoutBtn.addEventListener("click", () => {
@@ -132,6 +136,7 @@ export function Login() {
       });
     }
 
+    // Handle SPA navigation
     document.querySelectorAll("[data-link]").forEach((link) => {
       link.addEventListener("click", (e) => {
         e.preventDefault();

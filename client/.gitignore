@@ -1,6 +1,7 @@
 # ----------------------------------------
 # 🔒 Sensitive Files & Secrets
 # ----------------------------------------
+# Prevent secrets like environment configs and credentials from being committed
 .env
 .env.*.local
 *.key
@@ -14,12 +15,13 @@
 *service-account*.json
 *elimu-online*.json
 
-# Prevent secrets from being pushed if previously tracked
+# Allow .gitignore itself to remain tracked
 !.gitignore
 
 # ----------------------------------------
 # 🧱 Node.js & Vite Build Files (Frontend)
 # ----------------------------------------
+# Exclude build artifacts and dependencies from Vite and Node.js
 node_modules/
 dist/
 build/
@@ -28,6 +30,7 @@ build/
 # ----------------------------------------
 # 🐍 Python (Flask) Files (Backend)
 # ----------------------------------------
+# Ignore Python bytecode, local envs, and compiled cache
 __pycache__/
 *.pyc
 *.pyo
@@ -39,20 +42,21 @@ instance/
 *.sqlite3
 *.db
 
-# Alembic migration logs
+# Ignore database migration history
 migrations/
 
-# Pipenv / Poetry
+# Pipenv / Poetry lock files
 Pipfile.lock
 poetry.lock
 
-# Virtualenv
+# Local Python virtual environments
 venv/
 .venv/
 
 # ----------------------------------------
 # 🧪 Logs & Debug Files
 # ----------------------------------------
+# Ignore debug logs from npm, yarn, and pip
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -64,6 +68,7 @@ coverage/
 # ----------------------------------------
 # 🧠 IDE & System Junk Files
 # ----------------------------------------
+# Common IDE and OS-specific temporary files
 .DS_Store
 Thumbs.db
 .vscode/
@@ -76,6 +81,7 @@ Thumbs.db
 # ----------------------------------------
 # 🚀 Deployment Build Files
 # ----------------------------------------
+# Exclude packaged artifacts and deploy bundles
 *.zip
 *.tar
 *.tar.gz
@@ -84,6 +90,7 @@ Thumbs.db
 # ----------------------------------------
 # 🧪 Test Output
 # ----------------------------------------
+# Ignore test coverage, cache, and reporting artifacts
 htmlcov/
 pytest-debug.log
 .pyre/
@@ -96,6 +103,7 @@ test-results/
 # ----------------------------------------
 # 🔧 Misc
 # ----------------------------------------
+# Catch-all for miscellaneous untracked artifacts
 *.local
 *.lock
 *.orig

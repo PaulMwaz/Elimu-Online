@@ -1,13 +1,18 @@
 import Swiper from "swiper/bundle";
 import "swiper/css/bundle";
 
+// 📌 Renders the "Why Choose Us" section with Swiper carousel
 export function WhyChooseUs() {
+  // 📦 Section container
   const section = document.createElement("section");
   section.className = "py-12 bg-white";
 
+  // 🧱 Build inner HTML structure
   section.innerHTML = `
     <div class="max-w-7xl mx-auto px-4">
       <h2 class="text-3xl font-bold text-center text-gray-800 mb-8">Why Choose Elimu-Online</h2>
+      
+      <!-- 🌀 Swiper Carousel -->
       <div class="swiper mySwiper">
         <div class="swiper-wrapper">
           ${[
@@ -44,19 +49,19 @@ export function WhyChooseUs() {
           ]
             .map(
               (card) => `
-            <div class="swiper-slide">
-              <div class="bg-white p-6 rounded-lg shadow-md text-center max-w-sm mx-auto h-full flex flex-col items-center justify-center">
-                <img src="${card.icon}" alt="${card.title}" class="w-16 h-16 mb-4 object-contain" />
-                <h4 class="text-lg font-semibold text-gray-800 mb-2">${card.title}</h4>
-                <p class="text-sm text-gray-700">${card.text}</p>
-              </div>
-            </div>
-          `
+                <div class="swiper-slide">
+                  <div class="bg-white p-6 rounded-lg shadow-md text-center max-w-sm mx-auto h-full flex flex-col items-center justify-center">
+                    <img src="${card.icon}" alt="${card.title}" class="w-16 h-16 mb-4 object-contain" />
+                    <h4 class="text-lg font-semibold text-gray-800 mb-2">${card.title}</h4>
+                    <p class="text-sm text-gray-700">${card.text}</p>
+                  </div>
+                </div>
+              `
             )
             .join("")}
         </div>
 
-        <!-- Pagination and Navigation -->
+        <!-- 🔄 Swiper Pagination & Navigation Arrows -->
         <div class="swiper-pagination mt-4"></div>
         <div class="swiper-button-prev"></div>
         <div class="swiper-button-next"></div>
@@ -64,7 +69,7 @@ export function WhyChooseUs() {
     </div>
   `;
 
-  // Initialize Swiper
+  // 🛠️ Initialize Swiper carousel after DOM is rendered
   setTimeout(() => {
     new Swiper(".mySwiper", {
       slidesPerView: 1,
