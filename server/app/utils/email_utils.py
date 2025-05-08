@@ -10,18 +10,30 @@ EMAIL_PASSWORD = os.getenv("MAIL_PASSWORD")
 
 def send_reset_email(recipient_email, reset_url):
     """
-    Sends a password reset email with a unique link.
+    Sends a password reset email with a secure link.
+
     Args:
         recipient_email (str): The user's email address.
         reset_url (str): The unique reset link with token.
     """
+    print("📨 Preparing to send password reset email...")
+    print("📧 Recipient:", recipient_email)
+    print("🔗 Reset URL:", reset_url)
+
+    if not EMAIL_ADDRESS or not EMAIL_PASSWORD:
+        print("❌ Missing environment variables MAIL_USERNAME or MAIL_PASSWORD.")
+        raise EnvironmentError("Missing MAIL_USERNAME or MAIL_PASSWORD in environment variables.")
+
     try:
+        # Compose the email
         msg = EmailMessage()
         msg["Subject"] = "Elimu-Online Password Reset"
         msg["From"] = EMAIL_ADDRESS
         msg["To"] = recipient_email
 
-        # ✅ Plain text fallback
+        print("✉️ Composing email content...")
+
+        # Plain text fallback
         msg.set_content(f"""\
 Hello,
 
@@ -36,7 +48,7 @@ Thanks,
 Elimu-Online Team
 """)
 
-        # ✅ HTML content for modern email clients
+        # HTML version for modern email clients
         msg.add_alternative(f"""\
 <html>
   <body style="font-family: Arial, sans-serif; line-height: 1.6;">
@@ -62,12 +74,23 @@ Elimu-Online Team
 </html>
 """, subtype="html")
 
-        # ✅ Connect securely to Gmail SMTP with SSL
+        print("🔐 Connecting to Gmail SMTP server...")
+
+        # Connect and send email
         with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
             smtp.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
+            print("✅ Logged in to SMTP server.")
             smtp.send_message(msg)
-            print("✅ Reset email sent to:", recipient_email)
+            print(f"✅ Password reset email successfully sent to {recipient_email}")
+
+    except smtplib.SMTPAuthenticationError:
+        print("❌ SMTP Authentication failed. Check your Gmail address and app password settings.")
+        raise
+
+    except smtplib.SMTPException as smtp_error:
+        print("❌ SMTP error occurred:", smtp_error)
+        raise
 
     except Exception as e:
-        print("❌ Error sending reset email:", e)
+        print("❌ General error while sending reset email:", e)
         raise

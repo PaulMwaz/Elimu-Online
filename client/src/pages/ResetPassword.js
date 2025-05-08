@@ -11,31 +11,25 @@ export function ResetPassword(token) {
     : "https://elimu-online.onrender.com";
 
   section.innerHTML = `
-    <div class="bg-white shadow-xl p-6 md:p-8 rounded-lg w-full max-w-md">
-      <h2 class="text-2xl font-bold text-center text-blue-600 mb-4">
-        Reset Your Password
-      </h2>
-      <p class="text-sm text-center text-gray-600 mb-6">
-        Enter and confirm your new password below.
-      </p>
+    <div class="bg-white shadow-xl p-6 md:p-8 rounded-lg w-full max-w-md relative">
+      <h2 class="text-2xl font-bold text-center text-blue-600 mb-4">Reset Your Password</h2>
+      <p class="text-sm text-center text-gray-600 mb-6">Enter and confirm your new password below.</p>
 
-      <input
-        id="newPassword"
-        type="password"
-        placeholder="New Password"
-        class="w-full px-4 py-2 mb-4 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
-      <input
-        id="confirmPassword"
-        type="password"
-        placeholder="Confirm Password"
-        class="w-full px-4 py-2 mb-4 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
+      <div class="relative mb-4">
+        <input id="newPassword" type="password" placeholder="New Password"
+          class="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10" />
+        <span id="toggleNew" class="absolute right-3 top-2.5 cursor-pointer text-gray-500">👁️</span>
+        <div id="strengthMeter" class="text-xs mt-1 pl-1 font-medium"></div>
+      </div>
 
-      <button
-        id="resetBtn"
-        class="w-full bg-blue-600 text-white font-semibold py-2 rounded hover:bg-blue-700 transition"
-      >
+      <div class="relative mb-4">
+        <input id="confirmPassword" type="password" placeholder="Confirm Password"
+          class="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10" />
+        <span id="toggleConfirm" class="absolute right-3 top-2.5 cursor-pointer text-gray-500">👁️</span>
+      </div>
+
+      <button id="resetBtn"
+        class="w-full bg-blue-600 text-white font-semibold py-2 rounded hover:bg-blue-700 transition">
         Reset Password
       </button>
 
@@ -44,14 +38,52 @@ export function ResetPassword(token) {
   `;
 
   setTimeout(() => {
+    const newPasswordInput = document.getElementById("newPassword");
+    const confirmPasswordInput = document.getElementById("confirmPassword");
     const resetBtn = document.getElementById("resetBtn");
     const msgBox = document.getElementById("resetMessage");
+    const toggleNew = document.getElementById("toggleNew");
+    const toggleConfirm = document.getElementById("toggleConfirm");
+    const strengthMeter = document.getElementById("strengthMeter");
 
+    // 🔁 Toggle visibility
+    toggleNew.addEventListener("click", () => {
+      const type = newPasswordInput.type === "password" ? "text" : "password";
+      newPasswordInput.type = type;
+      toggleNew.textContent = type === "text" ? "🙈" : "👁️";
+    });
+
+    toggleConfirm.addEventListener("click", () => {
+      const type =
+        confirmPasswordInput.type === "password" ? "text" : "password";
+      confirmPasswordInput.type = type;
+      toggleConfirm.textContent = type === "text" ? "🙈" : "👁️";
+    });
+
+    // 💪 Password strength checker
+    newPasswordInput.addEventListener("input", () => {
+      const val = newPasswordInput.value;
+      const strength = getStrength(val);
+      strengthMeter.textContent = `Strength: ${strength.label}`;
+      strengthMeter.style.color = strength.color;
+    });
+
+    function getStrength(password) {
+      let score = 0;
+      if (password.length >= 8) score++;
+      if (/[A-Z]/.test(password)) score++;
+      if (/\d/.test(password)) score++;
+      if (/[@$!%*?&#]/.test(password)) score++;
+
+      if (score >= 4) return { label: "Strong", color: "green" };
+      if (score >= 2) return { label: "Medium", color: "orange" };
+      return { label: "Weak", color: "red" };
+    }
+
+    // 🔁 Submit reset
     resetBtn.addEventListener("click", async () => {
-      const newPassword = document.getElementById("newPassword").value.trim();
-      const confirmPassword = document
-        .getElementById("confirmPassword")
-        .value.trim();
+      const newPassword = newPasswordInput.value.trim();
+      const confirmPassword = confirmPasswordInput.value.trim();
 
       msgBox.innerHTML = "";
 
@@ -80,8 +112,6 @@ export function ResetPassword(token) {
 
         if (res.ok) {
           msgBox.innerHTML = `<span class="text-green-600">✅ Password updated successfully! Redirecting to login...</span>`;
-
-          // ✅ Redirect to login page after 3 seconds
           setTimeout(() => {
             history.pushState({}, "", "/login");
             window.dispatchEvent(new Event("popstate"));
@@ -94,15 +124,6 @@ export function ResetPassword(token) {
       } catch (err) {
         msgBox.innerHTML = `<span class="text-red-600">❌ Network error: ${err.message}</span>`;
       }
-    });
-
-    // Enable internal routing for links with data-link
-    document.querySelectorAll("[data-link]").forEach((link) => {
-      link.addEventListener("click", (e) => {
-        e.preventDefault();
-        history.pushState({}, "", link.getAttribute("href"));
-        window.dispatchEvent(new Event("popstate"));
-      });
     });
   }, 100);
 

@@ -1,15 +1,15 @@
 # 📁 server/app/routes/resource_routes.py
 
 from flask import Blueprint, request, jsonify
+from sqlalchemy import func  # ✅ Added for case-insensitive search
 from ..models.resource import Resource
-from ..models.category import Category  # ✅ Move import to top for consistency
+from ..models.category import Category
 from .. import db
 
 resource_routes = Blueprint("resource_routes", __name__)
 
 @resource_routes.route("/api/resources", methods=["GET"])
 def get_filtered_resources():
-    # ✅ Get filtering parameters from query
     subject = request.args.get("subject")
     form_class = request.args.get("formClass")
     level = request.args.get("level")
@@ -18,7 +18,6 @@ def get_filtered_resources():
 
     query = Resource.query
 
-    # ✅ Dynamically apply filters if provided
     if subject:
         query = query.filter(Resource.subject == subject)
     if form_class:
@@ -28,11 +27,10 @@ def get_filtered_resources():
     if term:
         query = query.filter(Resource.term == term)
     if category:
-        category_obj = Category.query.filter_by(name=category).first()
+        category_obj = Category.query.filter(func.lower(Category.name) == category.lower()).first()
         if category_obj:
             query = query.filter(Resource.category_id == category_obj.id)
         else:
-            # ✅ If category not found, return empty immediately
             return jsonify([]), 200
 
     resources = query.all()
@@ -51,5 +49,5 @@ def get_filtered_resources():
 
     return jsonify({
         "resources": data,
-        "count": len(data)  # ✅ Add count for frontend if you want
+        "count": len(data)
     }), 200

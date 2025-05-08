@@ -11,20 +11,16 @@ import os
 import jwt
 from datetime import datetime, timedelta
 
-# ✅ Blueprint Setup
 admin_routes = Blueprint("admin_routes", __name__)
 
-# ✅ Config
-BUCKET_NAME = os.getenv("GCS_BUCKET_NAME")
+BUCKET_NAME = os.getenv("GCS_BUCKET_NAME", "elimu-online-resources")
 SECRET_KEY = os.getenv("SECRET_KEY", "elimu-secret-dev-key")
 
 def get_bucket():
     client = storage.Client()
     return client.bucket(BUCKET_NAME)
 
-# ------------------------------
 # ✅ Admin Login
-# ------------------------------
 @admin_routes.route("/api/admin/login", methods=["POST", "OPTIONS"])
 def admin_login():
     if request.method == "OPTIONS":
@@ -76,9 +72,7 @@ def admin_login():
         print("🔥 Admin login error:", str(e))
         return jsonify({"error": "Admin login server error."}), 500
 
-# ------------------------------
-# ✅ Admin Upload
-# ------------------------------
+# ✅ Upload
 @admin_routes.route("/api/admin/upload", methods=["POST"])
 def admin_upload_file():
     try:
@@ -89,14 +83,20 @@ def admin_upload_file():
 
         level = request.form.get("level")
         category_name = request.form.get("category")
-        term = request.form.get("term")
         form_class = request.form.get("formClass")
         subject = request.form.get("subject")
         price = request.form.get("price", 0)
+        term = request.form.get("term") or "General"
         file = request.files.get("file")
 
-        if not all([level, category_name, term, form_class, subject, file]):
+        if not all([level, category_name, form_class, subject, file]):
+            print("🚫 Missing required fields")
             return jsonify({"error": "Missing required fields."}), 400
+
+        category_name = category_name.lower()
+        level = level.lower()
+        if category_name in ["notes", "e-books", "ebooks"]:
+            term = "General"
 
         category = Category.query.filter_by(name=category_name).first()
         if not category:
@@ -106,6 +106,7 @@ def admin_upload_file():
 
         filename = secure_filename(file.filename)
         blob_path = f"{category_name}/{level}/{form_class}/{subject}/{term}/{filename}"
+        print("📦 Uploading to GCS path:", blob_path)
 
         bucket = get_bucket()
         blob = bucket.blob(blob_path)
@@ -133,9 +134,7 @@ def admin_upload_file():
         print("🔥 Upload failed:", str(e))
         return jsonify({"error": "Failed to upload file", "details": str(e)}), 500
 
-# ------------------------------
-# ✅ Admin List Files
-# ------------------------------
+# ✅ List Files
 @admin_routes.route("/api/admin/files", methods=["GET", "OPTIONS"])
 def list_uploaded_files():
     if request.method == "OPTIONS":
@@ -170,9 +169,7 @@ def list_uploaded_files():
         print("🔥 List error:", str(e))
         return jsonify({"error": "Failed to fetch files", "details": str(e)}), 500
 
-# ------------------------------
-# ✅ Admin Rename
-# ------------------------------
+# ✅ Rename
 @admin_routes.route("/api/admin/rename", methods=["PATCH"])
 def rename_uploaded_file():
     try:
@@ -193,61 +190,66 @@ def rename_uploaded_file():
             return jsonify({"error": "Resource not found"}), 404
 
         bucket = get_bucket()
-
         old_blob_path = resource.file_url.replace(f"https://storage.googleapis.com/{BUCKET_NAME}/", "")
-        old_blob = bucket.blob(old_blob_path)
+        print("🔁 Renaming blob:", old_blob_path)
 
+        old_blob = bucket.blob(old_blob_path)
         if not old_blob.exists():
             return jsonify({"error": "Original file not found on GCS"}), 404
 
-        path_parts = old_blob_path.split("/")[:-1]
-        new_blob_path = "/".join(path_parts) + f"/{secure_filename(new_name)}"
+        new_blob_path = "/".join(old_blob_path.split("/")[:-1]) + f"/{secure_filename(new_name)}"
         new_blob = bucket.blob(new_blob_path)
 
-        bucket.copy_blob(old_blob, bucket, new_blob_path)
-        old_blob.delete()
+        try:
+            bucket.copy_blob(old_blob, bucket, new_blob_path)
+            old_blob.delete()
+        except NotFound:
+            print(f"⚠️ GCS blob not found during rename: {old_blob_path}")
+            return jsonify({"error": "Blob not found during rename"}), 404
 
         new_file_url = f"https://storage.googleapis.com/{BUCKET_NAME}/{new_blob_path}"
-
         resource.filename = secure_filename(new_name)
         resource.file_url = new_file_url
         db.session.commit()
 
-        print("✅ Renamed:", new_blob_path)
-        return jsonify({"message": "File renamed successfully."}), 200
+        print("✅ Renamed to:", new_file_url)
+        return jsonify({"message": "File renamed successfully.", "file_url": new_file_url}), 200
 
     except Exception as e:
         print("🔥 Rename failed:", str(e))
         return jsonify({"error": "Failed to rename file", "details": str(e)}), 500
 
-# ------------------------------
-# ✅ Admin Delete
-# ------------------------------
-@admin_routes.route("/api/admin/delete/<int:file_id>", methods=["DELETE"])
-def delete_uploaded_file(file_id):
+# ✅ Delete
+@admin_routes.route("/api/admin/delete/<int:resource_id>", methods=["DELETE", "OPTIONS"])
+def delete_uploaded_file(resource_id):
+    if request.method == "OPTIONS":
+        response = jsonify({"message": "CORS preflight for DELETE OK"})
+        response.headers.add("Access-Control-Allow-Origin", "http://localhost:5173")
+        response.headers.add("Access-Control-Allow-Credentials", "true")
+        response.headers.add("Access-Control-Allow-Headers", "Content-Type,Authorization")
+        response.headers.add("Access-Control-Allow-Methods", "DELETE,OPTIONS")
+        return response
+
     try:
         token = request.headers.get("Authorization", "").replace("Bearer ", "")
         user = verify_token(token)
         if not user or not user.get("is_admin"):
             return jsonify({"error": "Admin access required"}), 403
 
-        resource = Resource.query.get(file_id)
+        resource = Resource.query.get(resource_id)
         if not resource:
-            return jsonify({"error": "Resource not found"}), 404
+            return jsonify({"error": "File not found"}), 404
 
         blob_path = resource.file_url.replace(f"https://storage.googleapis.com/{BUCKET_NAME}/", "")
         bucket = get_bucket()
-
-        try:
-            bucket.delete_blob(blob_path)
-            print("✅ Deleted GCS file:", blob_path)
-        except NotFound:
-            print(f"⚠️ File not found on GCS, continuing to delete DB record: {blob_path}")
+        blob = bucket.blob(blob_path)
+        if blob.exists():
+            blob.delete()
+            print("🗑️ Deleted from GCS:", blob_path)
 
         db.session.delete(resource)
         db.session.commit()
-
-        print("✅ Deleted DB record:", file_id)
+        print("✅ Deleted from DB:", resource.filename)
         return jsonify({"message": "File deleted successfully."}), 200
 
     except Exception as e:

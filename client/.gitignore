@@ -1,28 +1,103 @@
-# Node modules
-node_modules/
-
-# Build output
-dist/
-
-# Environment files
+# ----------------------------------------
+# 🔒 Sensitive Files & Secrets
+# ----------------------------------------
 .env
 .env.*.local
+*.key
+*.pem
+*.crt
+*.p12
+*.pfx
+*.gcp.json
+*.firebase.json
+*.credentials.json
+*service-account*.json
+*elimu-online*.json
 
-# System files
-.DS_Store
-Thumbs.db
+# Prevent secrets from being pushed if previously tracked
+!.gitignore
 
-# Log files
+# ----------------------------------------
+# 🧱 Node.js & Vite Build Files (Frontend)
+# ----------------------------------------
+node_modules/
+dist/
+build/
+.vite/
+
+# ----------------------------------------
+# 🐍 Python (Flask) Files (Backend)
+# ----------------------------------------
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+instance/
+.env.bak
+.mypy_cache/
+.pytest_cache/
+*.sqlite3
+*.db
+
+# Alembic migration logs
+migrations/
+
+# Pipenv / Poetry
+Pipfile.lock
+poetry.lock
+
+# Virtualenv
+venv/
+.venv/
+
+# ----------------------------------------
+# 🧪 Logs & Debug Files
+# ----------------------------------------
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pip-log.txt
+coverage/
+*.cover
+*.log
 
-# Vite cache
-.vite/
-
-# VSCode settings
+# ----------------------------------------
+# 🧠 IDE & System Junk Files
+# ----------------------------------------
+.DS_Store
+Thumbs.db
 .vscode/
-
-# Mac & Linux Trash
-.Trashes
 .idea/
+*.swp
+*.swo
+.Trashes
+*.bak
+
+# ----------------------------------------
+# 🚀 Deployment Build Files
+# ----------------------------------------
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+
+# ----------------------------------------
+# 🧪 Test Output
+# ----------------------------------------
+htmlcov/
+pytest-debug.log
+.pyre/
+.cache/
+.tox/
+nosetests.xml
+coverage.xml
+test-results/
+
+# ----------------------------------------
+# 🔧 Misc
+# ----------------------------------------
+*.local
+*.lock
+*.orig
+*.tmp
+*.backup
