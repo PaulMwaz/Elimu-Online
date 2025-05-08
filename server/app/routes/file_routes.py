@@ -11,49 +11,39 @@ from google.cloud import storage
 
 file_routes = Blueprint("file_routes", __name__)
 BUCKET_NAME = os.getenv("GCS_BUCKET_NAME")
-print("📦 GCS Bucket:", BUCKET_NAME)
 
+# ✅ Helper to initialize and return the GCS bucket
 def get_bucket():
-    try:
-        client = storage.Client()
-        print("✅ GCS client initialized")
-        return client.bucket(BUCKET_NAME)
-    except Exception as e:
-        print("🔥 GCS Client Init Error:", e)
-        raise
+    client = storage.Client()
+    return client.bucket(BUCKET_NAME)
 
-# -------------------------------
-# 📂 List Grouped Uploaded Files
-# -------------------------------
+# ✅ List uploaded files grouped by path (category/level/form/subject/term)
 @file_routes.route("/api/files/grouped", methods=["GET"])
 def list_grouped_files():
     try:
         resources = Resource.query.all()
         grouped = {}
+
         for res in resources:
-            path = f"{res.category.name}/{res.level}/{res.form}/{res.subject}/{res.term}"
-            if path not in grouped:
-                grouped[path] = []
-            grouped[path].append({
+            path = f"{res.category.name}/{res.level}/{res.class_form}/{res.subject}/{res.term}"
+            grouped.setdefault(path, []).append({
                 "id": res.id,
-                "name": res.name,
-                "url": res.url,
+                "name": res.filename,
+                "url": res.file_url,
                 "price": res.price
             })
-        print(f"✅ Grouped and returning {len(grouped)} folders")
+
         return jsonify(grouped), 200
     except Exception as e:
-        print("🔥 Failed to group files:", e)
         return jsonify({"error": "Failed to list files", "details": str(e)}), 500
 
-# -------------------------------
-# 🗑️ Delete File (Safe Delete)
-# -------------------------------
+# ✅ Safely delete file from GCS and database
 @file_routes.route("/api/files/delete", methods=["POST"])
 def delete_file():
     try:
         token = request.headers.get("Authorization", "").replace("Bearer ", "")
         user = verify_token(token)
+
         if not user or not user.get("is_admin"):
             return jsonify({"error": "Admin access required"}), 403
 
@@ -66,39 +56,35 @@ def delete_file():
         if not resource:
             return jsonify({"error": "File not found in DB"}), 404
 
-        blob_path = unquote(resource.url.split(f"/{BUCKET_NAME}/")[-1])
+        blob_path = unquote(resource.file_url.split(f"/{BUCKET_NAME}/")[-1])
         bucket = get_bucket()
         blob = bucket.blob(blob_path)
 
         if blob.exists():
             blob.delete()
-            print(f"✅ Deleted GCS file: {blob_path}")
-        else:
-            print(f"⚠️ File not found in GCS, skipping blob delete: {blob_path}")
 
         db.session.delete(resource)
         db.session.commit()
-        print(f"✅ Deleted database record: {resource.name}")
+
         return jsonify({"message": "✅ File deleted successfully"}), 200
 
     except Exception as e:
-        print("🔥 Delete failed:", e)
         return jsonify({"error": "Failed to delete file", "details": str(e)}), 500
 
-# -------------------------------
-# ✏️ Rename File (GCS + Database)
-# -------------------------------
+# ✅ Rename file in GCS and update its metadata in the database
 @file_routes.route("/api/files/rename", methods=["POST"])
 def rename_file():
     try:
         token = request.headers.get("Authorization", "").replace("Bearer ", "")
         user = verify_token(token)
+
         if not user or not user.get("is_admin"):
             return jsonify({"error": "Admin access required"}), 403
 
         data = request.get_json()
         file_id = data.get("id")
         new_name = data.get("new_name")
+
         if not file_id or not new_name:
             return jsonify({"error": "Missing file ID or new name"}), 400
 
@@ -106,7 +92,7 @@ def rename_file():
         if not resource:
             return jsonify({"error": "File not found"}), 404
 
-        old_blob_path = unquote(resource.url.split(f"/{BUCKET_NAME}/")[-1])
+        old_blob_path = unquote(resource.file_url.split(f"/{BUCKET_NAME}/")[-1])
         new_filename = secure_filename(new_name)
         new_blob_path = "/".join(old_blob_path.split("/")[:-1]) + f"/{new_filename}"
 
@@ -115,23 +101,20 @@ def rename_file():
         new_blob = bucket.blob(new_blob_path)
 
         if not old_blob.exists():
-            print(f"⚠️ Old blob does not exist: {old_blob_path}")
             return jsonify({"error": "Original file not found in GCS"}), 404
 
         bucket.copy_blob(old_blob, bucket, new_blob_path)
         old_blob.delete()
         new_blob.make_public()
 
-        resource.name = new_filename
-        resource.url = f"https://storage.googleapis.com/{BUCKET_NAME}/{new_blob_path}"
+        resource.filename = new_filename
+        resource.file_url = f"https://storage.googleapis.com/{BUCKET_NAME}/{new_blob_path}"
         db.session.commit()
 
-        print(f"✅ Renamed file to {new_filename} and updated DB")
         return jsonify({
             "message": "✅ File renamed successfully",
-            "new_url": resource.url
+            "new_url": resource.file_url
         }), 200
 
     except Exception as e:
-        print("🔥 Rename failed:", e)
         return jsonify({"error": "Failed to rename file", "details": str(e)}), 500

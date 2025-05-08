@@ -5,22 +5,19 @@ import jwt
 from functools import wraps
 from flask import request, jsonify, g
 
-# ✅ Secret Key fallback for development
+# 🔐 Fallback secret key for development environments
 SECRET_KEY = os.getenv("SECRET_KEY", "elimu-secret-dev-key")
 
-# ✅ Verify and decode a JWT token
+# ✅ Decode and verify JWT token
 def verify_token(token):
     try:
-        decoded = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-        return decoded
+        return jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
     except jwt.ExpiredSignatureError:
-        print("⚠️ Token expired")
-        return None
+        return None  # Token has expired
     except jwt.InvalidTokenError:
-        print("⚠️ Invalid token")
-        return None
+        return None  # Token is invalid
 
-# ✅ Protect routes requiring User Login
+# ✅ Decorator to enforce user authentication
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -32,11 +29,11 @@ def login_required(f):
         if not user:
             return jsonify({"error": "Invalid or expired token. Please login again."}), 401
 
-        g.current_user = user
+        g.current_user = user  # Store user info in Flask global context
         return f(*args, **kwargs)
     return decorated_function
 
-# ✅ Protect routes requiring Admin Access
+# ✅ Decorator to enforce admin access
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -48,6 +45,6 @@ def admin_required(f):
         if not user or not user.get("is_admin"):
             return jsonify({"error": "Admin privileges required."}), 403
 
-        g.current_user = user
+        g.current_user = user  # Store admin info in Flask global context
         return f(*args, **kwargs)
     return decorated_function

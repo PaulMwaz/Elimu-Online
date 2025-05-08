@@ -1,13 +1,14 @@
 # 📁 server/app/routes/resource_routes.py
 
 from flask import Blueprint, request, jsonify
-from sqlalchemy import func  # ✅ Added for case-insensitive search
+from sqlalchemy import func  # ✅ Enables case-insensitive queries
 from ..models.resource import Resource
 from ..models.category import Category
 from .. import db
 
 resource_routes = Blueprint("resource_routes", __name__)
 
+# ✅ Endpoint to filter and return resources based on query parameters
 @resource_routes.route("/api/resources", methods=["GET"])
 def get_filtered_resources():
     subject = request.args.get("subject")
@@ -16,8 +17,10 @@ def get_filtered_resources():
     term = request.args.get("term")
     category = request.args.get("category")
 
+    # Start building base query
     query = Resource.query
 
+    # ✅ Apply filters if provided
     if subject:
         query = query.filter(Resource.subject == subject)
     if form_class:
@@ -31,10 +34,11 @@ def get_filtered_resources():
         if category_obj:
             query = query.filter(Resource.category_id == category_obj.id)
         else:
+            # Return empty list if category doesn't match
             return jsonify([]), 200
 
+    # ✅ Fetch and serialize results
     resources = query.all()
-
     data = [{
         "id": r.id,
         "filename": r.filename,

@@ -11,16 +11,19 @@ import os
 import jwt
 from datetime import datetime, timedelta
 
+# ✅ Create Blueprint for admin routes
 admin_routes = Blueprint("admin_routes", __name__)
 
+# ✅ Environment configuration
 BUCKET_NAME = os.getenv("GCS_BUCKET_NAME", "elimu-online-resources")
 SECRET_KEY = os.getenv("SECRET_KEY", "elimu-secret-dev-key")
 
+# ✅ Helper function to access Google Cloud Storage bucket
 def get_bucket():
     client = storage.Client()
     return client.bucket(BUCKET_NAME)
 
-# ✅ Admin Login
+# ✅ Admin Login Route
 @admin_routes.route("/api/admin/login", methods=["POST", "OPTIONS"])
 def admin_login():
     if request.method == "OPTIONS":
@@ -50,8 +53,6 @@ def admin_login():
                 "exp": datetime.utcnow() + timedelta(days=1)
             }, SECRET_KEY, algorithm="HS256")
 
-            print("✅ Admin login success:", email)
-
             response = jsonify({
                 "message": "Admin login successful",
                 "token": token,
@@ -65,14 +66,12 @@ def admin_login():
             response.headers.add("Access-Control-Allow-Credentials", "true")
             return response, 200
 
-        print("❌ Invalid admin credentials:", email)
         return jsonify({"error": "Invalid admin login credentials."}), 401
 
     except Exception as e:
-        print("🔥 Admin login error:", str(e))
         return jsonify({"error": "Admin login server error."}), 500
 
-# ✅ Upload
+# ✅ Admin Upload File Route
 @admin_routes.route("/api/admin/upload", methods=["POST"])
 def admin_upload_file():
     try:
@@ -90,7 +89,6 @@ def admin_upload_file():
         file = request.files.get("file")
 
         if not all([level, category_name, form_class, subject, file]):
-            print("🚫 Missing required fields")
             return jsonify({"error": "Missing required fields."}), 400
 
         category_name = category_name.lower()
@@ -106,7 +104,6 @@ def admin_upload_file():
 
         filename = secure_filename(file.filename)
         blob_path = f"{category_name}/{level}/{form_class}/{subject}/{term}/{filename}"
-        print("📦 Uploading to GCS path:", blob_path)
 
         bucket = get_bucket()
         blob = bucket.blob(blob_path)
@@ -127,14 +124,12 @@ def admin_upload_file():
         db.session.add(resource)
         db.session.commit()
 
-        print("✅ Uploaded:", file_url)
         return jsonify({"message": "File uploaded successfully.", "file_url": file_url}), 201
 
     except Exception as e:
-        print("🔥 Upload failed:", str(e))
         return jsonify({"error": "Failed to upload file", "details": str(e)}), 500
 
-# ✅ List Files
+# ✅ List All Files Uploaded by Admin
 @admin_routes.route("/api/admin/files", methods=["GET", "OPTIONS"])
 def list_uploaded_files():
     if request.method == "OPTIONS":
@@ -162,14 +157,12 @@ def list_uploaded_files():
             "file_url": res.file_url,
         } for res in resources]
 
-        print("✅ Files listed:", len(files))
         return jsonify(files), 200
 
     except Exception as e:
-        print("🔥 List error:", str(e))
         return jsonify({"error": "Failed to fetch files", "details": str(e)}), 500
 
-# ✅ Rename
+# ✅ Rename Uploaded File
 @admin_routes.route("/api/admin/rename", methods=["PATCH"])
 def rename_uploaded_file():
     try:
@@ -191,7 +184,6 @@ def rename_uploaded_file():
 
         bucket = get_bucket()
         old_blob_path = resource.file_url.replace(f"https://storage.googleapis.com/{BUCKET_NAME}/", "")
-        print("🔁 Renaming blob:", old_blob_path)
 
         old_blob = bucket.blob(old_blob_path)
         if not old_blob.exists():
@@ -204,7 +196,6 @@ def rename_uploaded_file():
             bucket.copy_blob(old_blob, bucket, new_blob_path)
             old_blob.delete()
         except NotFound:
-            print(f"⚠️ GCS blob not found during rename: {old_blob_path}")
             return jsonify({"error": "Blob not found during rename"}), 404
 
         new_file_url = f"https://storage.googleapis.com/{BUCKET_NAME}/{new_blob_path}"
@@ -212,14 +203,12 @@ def rename_uploaded_file():
         resource.file_url = new_file_url
         db.session.commit()
 
-        print("✅ Renamed to:", new_file_url)
         return jsonify({"message": "File renamed successfully.", "file_url": new_file_url}), 200
 
     except Exception as e:
-        print("🔥 Rename failed:", str(e))
         return jsonify({"error": "Failed to rename file", "details": str(e)}), 500
 
-# ✅ Delete
+# ✅ Delete Uploaded File
 @admin_routes.route("/api/admin/delete/<int:resource_id>", methods=["DELETE", "OPTIONS"])
 def delete_uploaded_file(resource_id):
     if request.method == "OPTIONS":
@@ -245,13 +234,10 @@ def delete_uploaded_file(resource_id):
         blob = bucket.blob(blob_path)
         if blob.exists():
             blob.delete()
-            print("🗑️ Deleted from GCS:", blob_path)
 
         db.session.delete(resource)
         db.session.commit()
-        print("✅ Deleted from DB:", resource.filename)
         return jsonify({"message": "File deleted successfully."}), 200
 
     except Exception as e:
-        print("🔥 Delete error:", str(e))
         return jsonify({"error": "Failed to delete file", "details": str(e)}), 500

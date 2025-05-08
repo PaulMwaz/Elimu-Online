@@ -1,47 +1,45 @@
 from .. import db
 
 class Resource(db.Model):
-    __tablename__ = 'resources'  # ✅ Explicit table name
+    __tablename__ = 'resources'  # ✅ Explicitly define table name for clarity
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)  # 🔑 Primary key identifier
 
-    # 📄 File Info
-    filename = db.Column(db.String(255), nullable=False)     # E.g., "Math_Notes.pdf"
-    file_url = db.Column(db.String(500), nullable=False)     # Public URL from GCS
+    # 📄 Basic file metadata
+    filename = db.Column(db.String(255), nullable=False)     # Original name of the uploaded file
+    file_url = db.Column(db.String(500), nullable=False)     # Public URL from Google Cloud Storage
 
-    # 📚 Classification Fields
-    subject = db.Column(db.String(100), nullable=False)      # E.g., "Math", "English"
-    class_form = db.Column(db.String(50), nullable=False)    # E.g., "Form 2", "Grade 5"
-    level = db.Column(db.String(50), nullable=False)         # E.g., "primary", "highschool"
-    term = db.Column(db.String(50), nullable=True)           # Optional: "Term 1", or "General"
-    price = db.Column(db.Integer, nullable=False, default=0) # 0 = Free, else show price in KES
+    # 📚 Educational classification metadata
+    subject = db.Column(db.String(100), nullable=False)      # Subject name (e.g., Math, English)
+    class_form = db.Column(db.String(50), nullable=False)    # Academic class/form (e.g., Form 2, Grade 4)
+    level = db.Column(db.String(50), nullable=False)         # Educational level: "primary" or "highschool"
+    term = db.Column(db.String(50), nullable=True)           # Term (e.g., "Term 1") or can be null for general use
+    price = db.Column(db.Integer, nullable=False, default=0) # Pricing in KES: 0 = Free; >0 = Paid
 
-    # 🔗 Category FK (e.g., Notes, Exams, E-Books)
+    # 🔗 Foreign Key to Category table
     category_id = db.Column(db.Integer, db.ForeignKey('categories.id'), nullable=False)
 
-    # 🔁 Relationships
-
-    # ↔️ Many-to-Many: Users <-> Resources (for tracking purchases/access)
+    # 🔁 Many-to-Many relationship with User (via association table)
     users = db.relationship(
-        "User",
-        secondary="user_resources",        # Join table (ensure exists)
-        back_populates="resources",
-        lazy="subquery"
+        "User",                          # User model
+        secondary="user_resources",     # Association table for many-to-many mapping
+        back_populates="resources",     # Sync with User.resources
+        lazy="subquery"                 # Load efficiently using subquery strategy
     )
 
-    # 🔗 Many-to-One: Resource -> Category
+    # 🔁 Many-to-One relationship to Category (each resource belongs to one category)
     category = db.relationship(
-        "Category",
-        back_populates="resources",
-        lazy="joined"                      # Optimized eager loading
+        "Category",                     # Category model
+        back_populates="resources",     # Sync with Category.resources
+        lazy="joined"                   # Eager load category with resource
     )
 
-    # 🔁 One-to-Many: Resource -> Purchases (payment records)
+    # 🔁 One-to-Many relationship to Purchases (each resource can have many purchase records)
     purchases = db.relationship(
-        "Purchase",
-        back_populates="resource",
+        "Purchase",                     # Purchase model
+        back_populates="resource",      # Sync with Purchase.resource
         lazy="subquery"
     )
 
     def __repr__(self):
-        return f"<Resource #{self.id} '{self.filename}' | {self.subject} | {self.class_form}>"
+        return f"<Resource #{self.id} '{self.filename}' | {self.subject} | {self.class_form}>"  # 🧾 Readable model output for debugging

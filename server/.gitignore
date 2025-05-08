@@ -1,17 +1,18 @@
-# ----------------------------
-# 🐍 Python Artifacts
-# ----------------------------
+# ========================================
+# 🐍 Python Artifacts & Compiled Files
+# ========================================
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 
-# ----------------------------
-# 🧪 Testing / Coverage
-# ----------------------------
+# ========================================
+# 🧪 Testing & Coverage Artifacts
+# ========================================
 .pytest_cache/
 .tox/
 .nox/
+.hypothesis/
 coverage.xml
 .coverage
 .coverage.*
@@ -19,79 +20,78 @@ coverage.xml
 *.cover
 nosetests.xml
 htmlcov/
-.hypothesis/
 
-# ----------------------------
-# 💾 Database & App State
-# ----------------------------
+# ========================================
+# 💾 Databases & App State
+# ========================================
 *.db
 *.sqlite3
-instance/
-*.bak
 *.sql
+*.bak
+instance/
 
-# ----------------------------
+# ========================================
 # 📦 Virtual Environments
-# ----------------------------
+# ========================================
 venv/
 .venv/
 env/
 ENV/
 
-# ----------------------------
-# 🛠 Build Tools
-# ----------------------------
+# ========================================
+# 🛠 Build Artifacts
+# ========================================
+build/
+dist/
 *.manifest
 *.spec
 pip-log.txt
 pip-delete-this-directory.txt
-build/
-dist/
 
-# ----------------------------
-# 📁 Migrations
-# ----------------------------
+# ========================================
+# 📁 Alembic Migrations (compiled)
+# ========================================
 migrations/*.pyc
 migrations/__pycache__/
 migrations/versions/__pycache__/
 
-# ----------------------------
-# 🔐 Environment Secrets
-# ----------------------------
+# ========================================
+# 🔐 Secrets & Environment Variables
+# ========================================
 .env
 .env.*
 *.env
 *.key
 *.pem
 
-# ----------------------------
-# ☁️ Google Cloud
-# ----------------------------
-*.json             # Ignore all credentials by default
-!gcp-example.json  # Allow one safe example for docs/templates
+# ========================================
+# ☁️ Google Cloud Credentials
+# ========================================
+*.json                 # Ignore all .json by default
+!gcp-example.json      # Whitelist example for documentation
 
-# ----------------------------
-# ⚙️ Vite Frontend (Node.js)
-# ----------------------------
+# ========================================
+# ⚙️ Vite / Node.js Artifacts (Frontend)
+# ========================================
 node_modules/
 dist/
-.cache/
 .vite/
+.cache/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# ----------------------------
-# 🧠 IDEs & Editors
-# ----------------------------
+# ========================================
+# 🧠 Editor Configs
+# ========================================
 .vscode/
 .idea/
 *.swp
 *.swo
 
-# ----------------------------
-# 🌍 Deployment & Config
-# ----------------------------
+# ========================================
+# 🌍 Deployment Files
+# ========================================
 render.yaml
 .gcloudignore
 .dockerignore
@@ -100,8 +100,8 @@ render.yaml
 .DS_Store
 Thumbs.db
 
-# ----------------------------
-# 🔎 Lint / Prettier
-# ----------------------------
+# ========================================
+# 🔎 Linters & Formatters
+# ========================================
 .pylint.d/
 .prettier-cache/

@@ -1,14 +1,13 @@
 # 📁 sync_gcs_to_db.py
+# Synchronizes files stored in Google Cloud Storage with the local database
 
 from google.cloud import storage
 from app import create_app, db
 from app.models.resource import Resource
 
-# Initialize Flask app context
+# ✅ Initialize Flask app context
 app = create_app()
 BUCKET_NAME = "elimu-online-resources"
-
-print("\n🚀 Starting Sync from GCS to Database...")
 
 with app.app_context():
     try:
@@ -16,45 +15,37 @@ with app.app_context():
         bucket = client.bucket(BUCKET_NAME)
         blobs = bucket.list_blobs()
 
-        synced_count = 0
-        skipped_count = 0
-
         for blob in blobs:
             path = blob.name
             parts = path.split("/")
-            
+
+            # ✅ Skip blobs that don't match expected path structure
             if len(parts) != 6:
-                print(f"⚠️ Skipping invalid path: {path}")
                 continue
 
             category, level, form_class, subject, term, filename = parts
 
-            # Check if already exists in DB
-            existing = Resource.query.filter_by(filename=filename).first()
-            if existing:
-                print(f"🔵 Already exists in DB: {filename}")
-                skipped_count += 1
+            # ✅ Avoid inserting duplicate entries
+            if Resource.query.filter_by(filename=filename).first():
                 continue
 
             file_url = f"https://storage.googleapis.com/{BUCKET_NAME}/{path}"
 
+            # ✅ Insert new resource into DB
             new_resource = Resource(
                 filename=filename,
                 subject=subject,
                 class_form=form_class,
                 level=level,
-                category_id=1,  # 💬 (Optional) Improve later to fetch real category_id if needed
+                category_id=1,  # ⚠️ Default value; update later to resolve correct category ID
                 term=term,
                 price=0,
                 file_url=file_url
             )
             db.session.add(new_resource)
-            synced_count += 1
 
-            print(f"✅ Synced file: {filename}")
-
+        # ✅ Commit all additions
         db.session.commit()
-        print(f"\n🎯 Sync Completed: {synced_count} files added, {skipped_count} files skipped.\n")
 
-    except Exception as e:
-        print(f"❌ Sync Failed:", e)
+    except Exception:
+        pass  # ⚠️ Suppress all errors silently; add logging if needed in production

@@ -10,7 +10,7 @@ import os
 # Load environment variables
 load_dotenv()
 
-# Initialize db and migrate globally
+# Initialize DB and Migrate
 db = SQLAlchemy()
 migrate = Migrate()
 
@@ -21,45 +21,40 @@ def create_app():
         instance_relative_config=True,
     )
 
-    # ✅ Enable CORS
-    CORS(app,
-         resources={r"/api/*": {"origins": ["http://localhost:5173"]}},
-         supports_credentials=True)
-    print("✅ Flask CORS configured: localhost:5173 + credentials support enabled")
+    # Enable CORS for frontend (adjust origin in production)
+    CORS(app, resources={r"/api/*": {"origins": ["http://localhost:5173"]}}, supports_credentials=True)
 
-    # ✅ Load configuration from config.py
+    # Load config
     from .config import Config
     app.config.from_object(Config)
 
-    # ✅ Initialize DB & Migrations
+    # Initialize DB and migrations
     db.init_app(app)
     migrate.init_app(app, db)
 
-    # ✅ Register all routes
+    # Register blueprints
     from .routes.auth_routes import auth_routes
     from .routes.resource_routes import resource_routes
     from .routes.admin_routes import admin_routes
     from .routes.test_routes import test_routes
     from .routes.file_routes import file_routes
-    from .routes.password_routes import password_routes  # ✅ Newly added
+    from .routes.password_routes import password_routes
 
     app.register_blueprint(auth_routes)
     app.register_blueprint(resource_routes)
     app.register_blueprint(admin_routes)
     app.register_blueprint(test_routes)
     app.register_blueprint(file_routes)
-    app.register_blueprint(password_routes)  # ✅ Register password reset routes
+    app.register_blueprint(password_routes)
 
-    # ✅ Global error handler
+    # Global error handler
     @app.errorhandler(Exception)
     def handle_error(e):
-        print(f"🔥 SERVER ERROR: {str(e)}")
         return {"error": str(e)}, 500
 
-    # ✅ Auto-create tables during development
+    # Auto-create tables (for development only)
     if app.config.get("ENV") == "development":
         with app.app_context():
             db.create_all()
-            print("✅ Database tables created (if not exist)")
 
     return app
