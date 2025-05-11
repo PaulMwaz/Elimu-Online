@@ -2,7 +2,7 @@
 
 **Elimu-Online** is a full-stack e-learning platform designed for students and teachers to access digital educational resources in a structured, curriculum-aligned format. It supports secure login, file uploads, categorized browsing, and integration with cloud storage and mobile payments.
 
-![Alt Text](C:\Users\hp\Desktop\GITHUB\FINAL-SUBMITTED\Elimu-Online\client\public\images\Elimu-Online.jpg)
+![Elimu-Online](./Elimu-Online.jpg)
 
 ---
 
