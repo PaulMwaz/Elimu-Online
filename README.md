@@ -2,6 +2,8 @@
 
 **Elimu-Online** is a full-stack e-learning platform designed for students and teachers to access digital educational resources in a structured, curriculum-aligned format. It supports secure login, file uploads, categorized browsing, and integration with cloud storage and mobile payments.
 
+![Alt Text](C:\Users\hp\Desktop\GITHUB\FINAL-SUBMITTED\Elimu-Online\client\public\images\Elimu-Online.jpg)
+
 ---
 
 ## ✅ Phase 5 Requirements Met
@@ -48,7 +50,8 @@
 
 ```bash
 cd server
-pip install -r requirements.txt
+pipenv install
+pipenv shell
 python run.py
 ```
 
@@ -148,5 +151,5 @@ This project is licensed under the [MIT License](LICENSE).
 
 ---
 
-© 2025 Elimu-Online — Empowering learners, one file at a time.
-#DevelopedByPaul
+🔒 © 2025 Elimu-Online — Empowering learners, one file at a time.
+🧑‍💻 Developed by Paul
