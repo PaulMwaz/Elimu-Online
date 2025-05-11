@@ -151,5 +151,5 @@ This project is licensed under the [MIT License](LICENSE).
 
 ---
 
-🔒 © 2025 Elimu-Online — Empowering learners, one file at a time.
+🔒 © 2025 Elimu-Online — Empowering learners, one file at a time.  
 🧑‍💻 Developed by Paul
